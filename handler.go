@@ -9,12 +9,14 @@ import (
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
+// Handler represents update handler
 type Handler struct {
 	cfg *config.Config
 	log logger.Logger
 	bh  *th.BotHandler
 }
 
+// NewHandler creates new Handler
 func NewHandler(cfg *config.Config, log logger.Logger, bh *th.BotHandler) *Handler {
 	return &Handler{
 		cfg: cfg,
@@ -23,6 +25,7 @@ func NewHandler(cfg *config.Config, log logger.Logger, bh *th.BotHandler) *Handl
 	}
 }
 
+// RegisterHandlers registers all handlers in bot handler
 func (h *Handler) RegisterHandlers() {
 	h.bh.HandleMessage(h.createInvoice, th.CommandEqual("invoice"))
 	h.bh.HandlePreCheckoutQuery(h.preCheckout)

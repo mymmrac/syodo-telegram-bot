@@ -2,3 +2,6 @@
 level = "debug"
 destination = "stdout"
 filename = "server.log"
+
+[settings]
+stopTimeout = "10s"

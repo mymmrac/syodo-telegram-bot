@@ -19,10 +19,11 @@ import (
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
-var configFile = flag.String("config", "config.toml", "Config file")
-
-var versionRequest = flag.Bool("version", false, "Version")
-var buildInfoRequest = flag.Bool("build-info", false, "Build info")
+var (
+	configFile       = flag.String("config", "config.toml", "Config file")
+	versionRequest   = flag.Bool("version", false, "Version")
+	buildInfoRequest = flag.Bool("build-info", false, "Build info")
+)
 
 func main() {
 	flag.Parse()
@@ -67,7 +68,7 @@ func main() {
 		log.Fatalf("Get updates: %s", err)
 	}
 
-	bh, err := th.NewBotHandler(bot, updates, th.WithStopTimeout(time.Second*10))
+	bh, err := th.NewBotHandler(bot, updates, th.WithStopTimeout(cfg.Settings.StopTimeout))
 	if err != nil {
 		log.Fatalf("Create bot handler: %s", err)
 	}

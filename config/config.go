@@ -3,12 +3,14 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/BurntSushi/toml"
 
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
+// LoadConfig loads config from config file and environment variables
 func LoadConfig(filename string) (*Config, error) {
 	cfg := &Config{}
 
@@ -34,20 +36,24 @@ func LoadConfig(filename string) (*Config, error) {
 	return cfg, nil
 }
 
+// Config represents general config structure
 type Config struct {
 	Log      Log
 	Settings Settings
 }
 
+// Log represents logger config
 type Log struct {
 	Level       string
 	Destination string
 	Filename    string
 }
 
+// Settings represents general settings
 type Settings struct {
 	BotToken      string
 	ProviderToken string
+	StopTimeout   time.Duration
 }
 
 const (
@@ -60,9 +66,10 @@ const (
 	logLevelError = "error"
 	logLevelWarn  = "warn"
 	logLevelInfo  = "info"
-	LogLevelDebug = "debug"
+	logLevelDebug = "debug"
 )
 
+// ConfigureLogger apples config to logger
 func (c *Config) ConfigureLogger(log *logger.Log) error {
 	switch c.Log.Destination {
 	case logDestinationStdout:
@@ -74,14 +81,14 @@ func (c *Config) ConfigureLogger(log *logger.Log) error {
 			return err
 		}
 	default:
-		return fmt.Errorf("unkown logger destination: %q", c.Log.Destination)
+		return fmt.Errorf("unknown logger destination: %q", c.Log.Destination)
 	}
 
 	switch c.Log.Level {
-	case logLevelError, logLevelWarn, logLevelInfo, LogLevelDebug:
+	case logLevelError, logLevelWarn, logLevelInfo, logLevelDebug:
 		log.SetLevel(c.Log.Level)
 	default:
-		return fmt.Errorf("unkown logger level: %q", c.Log.Level)
+		return fmt.Errorf("unknown logger level: %q", c.Log.Level)
 	}
 
 	return nil

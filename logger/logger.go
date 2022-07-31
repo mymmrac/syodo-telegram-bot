@@ -13,6 +13,7 @@ func init() {
 	golog.Levels[golog.DebugLevel].Title = "[DEBUG]"
 }
 
+// Logger represents logger
 type Logger interface {
 	Error(v ...any)
 	Errorf(format string, args ...any)
@@ -27,6 +28,7 @@ type Logger interface {
 	Debugf(format string, args ...any)
 }
 
+// Log represents Log implementation using golog.Logger
 type Log struct {
 	outputFile *os.File
 
@@ -35,6 +37,7 @@ type Log struct {
 
 const logTimeFormat = "02.01.2006 15:04:05 MST"
 
+// NewLog creates new Log from golog.Logger
 func NewLog(log *golog.Logger) *Log {
 	log.TimeFormat = logTimeFormat
 
@@ -43,6 +46,7 @@ func NewLog(log *golog.Logger) *Log {
 	}
 }
 
+// SetOutputFile sets output file for logger
 func (l *Log) SetOutputFile(filename string) error {
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -55,6 +59,7 @@ func (l *Log) SetOutputFile(filename string) error {
 	return nil
 }
 
+// Close closes logger if needed
 func (l *Log) Close() error {
 	if l.outputFile != nil {
 		return l.outputFile.Close()
