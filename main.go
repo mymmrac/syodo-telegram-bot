@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime/debug"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -19,9 +21,25 @@ import (
 
 var configFile = flag.String("config", "config.toml", "Config file")
 
+var versionRequest = flag.Bool("version", false, "Version")
+var buildInfoRequest = flag.Bool("build-info", false, "Build info")
+
 func main() {
-	// ==== Config ====
 	flag.Parse()
+
+	// ==== Build Info ====
+	if *buildInfoRequest {
+		displayBuildInfo()
+		return
+	}
+
+	if *versionRequest {
+		displayVersion()
+		return
+	}
+	// ==== Build Info End ====
+
+	// ==== Config ====
 	cfg, err := config.LoadConfig(*configFile)
 	assert(err == nil, fmt.Errorf("load config: %w", err))
 	// ==== Config End ====
@@ -79,6 +97,41 @@ func main() {
 	<-done
 	log.Info("Done")
 	// ==== Stop Handling End ====
+}
+
+func displayBuildInfo() {
+	build, ok := debug.ReadBuildInfo()
+	assert(ok, "no build info found")
+
+	fmt.Println(build.String())
+}
+
+func displayVersion() {
+	build, ok := debug.ReadBuildInfo()
+	assert(ok, "no build info found")
+
+	var (
+		err       error
+		commit    string
+		buildTime time.Time
+		modified  bool
+	)
+
+	for _, setting := range build.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			commit = setting.Value
+		case "vcs.time":
+			buildTime, err = time.Parse(time.RFC3339, setting.Value)
+			assert(err == nil, fmt.Errorf("parse build time: %w", err))
+		case "vcs.modified":
+			modified, err = strconv.ParseBool(setting.Value)
+			assert(err == nil, fmt.Errorf("parse modifed: %w", err))
+		}
+	}
+
+	fmt.Printf("Syodo Telegram Bot\nCommit: %s (modified :%t)\nBuild Time: %s\n", commit, modified,
+		buildTime.Local())
 }
 
 func assert(ok bool, args ...any) {
