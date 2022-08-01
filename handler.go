@@ -13,15 +13,17 @@ import (
 type Handler struct {
 	cfg  *config.Config
 	log  logger.Logger
+	bot  *telego.Bot
 	bh   *th.BotHandler
 	text Text
 }
 
 // NewHandler creates new Handler
-func NewHandler(cfg *config.Config, log logger.Logger, bh *th.BotHandler, text Text) *Handler {
+func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, text Text) *Handler {
 	return &Handler{
 		cfg:  cfg,
 		log:  log,
+		bot:  bot,
 		bh:   bh,
 		text: text,
 	}
@@ -29,7 +31,18 @@ func NewHandler(cfg *config.Config, log logger.Logger, bh *th.BotHandler, text T
 
 // RegisterHandlers registers all handlers in bot handler
 func (h *Handler) RegisterHandlers() {
+	err := h.bot.SetMyCommands(&telego.SetMyCommandsParams{
+		Commands: []telego.BotCommand{
+			{"start", h.text.Get("startDescription", nil)},
+			{"help", h.text.Get("helpDescription", nil)},
+		},
+	})
+	if err != nil {
+		h.log.Fatalf("Set bot commands: %v", err)
+	}
+
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
+	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
 }
 
 func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
@@ -40,5 +53,16 @@ func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
 	)
 	if err != nil {
 		h.log.Errorf("Send start message: %s", err)
+	}
+}
+
+func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
+	chatID := message.Chat.ID
+	_, err := bot.SendMessage(
+		tu.Message(tu.ID(chatID), h.text.Get("help", message)).
+			WithParseMode(telego.ModeHTML),
+	)
+	if err != nil {
+		h.log.Errorf("Send help message: %s", err)
 	}
 }

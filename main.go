@@ -82,7 +82,7 @@ func start(cfg *config.Config, log *logger.Log) {
 	}
 	// ==== Dependencies Setup End ====
 
-	handler := NewHandler(cfg, log, bh, text)
+	handler := NewHandler(cfg, log, bot, bh, text)
 	handler.RegisterHandlers()
 
 	// ==== Stopping ====

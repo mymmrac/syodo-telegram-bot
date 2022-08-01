@@ -16,6 +16,9 @@ func init() {
 
 // Logger represents logger
 type Logger interface {
+	Fatal(v ...any)
+	Fatalf(format string, args ...any)
+
 	Error(v ...any)
 	Errorf(format string, args ...any)
 

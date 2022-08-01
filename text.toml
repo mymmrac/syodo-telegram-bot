@@ -1,4 +1,13 @@
-# Start cmd, Message as data
+# Start cmd description
+startDescription = "Start"
+# Start cmd, data: Message
 start = """
 Hello <i>{{ .From.FirstName }}</i>
+"""
+
+# Help cmd description
+helpDescription = "Help"
+# Help cmd, data: Message
+help = """
+Help
 """
