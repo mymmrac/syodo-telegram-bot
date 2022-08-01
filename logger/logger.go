@@ -40,7 +40,7 @@ const logTimeFormat = "02.01.2006 15:04:05 MST"
 
 // NewLog creates new Log from golog.Logger
 func NewLog(log *golog.Logger) *Log {
-	log.TimeFormat = logTimeFormat
+	log.SetTimeFormat(logTimeFormat)
 
 	return &Log{
 		Logger: log,

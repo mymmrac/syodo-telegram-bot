@@ -43,6 +43,16 @@ linters:
         - wrapcheck # Checks that errors returned from external packages are wrapped
         - wsl # Whitespace Linter - Forces you to use empty lines!
 
+        # Not working in Go 1.18
+        - bodyclose
+        - contextcheck
+        - nilerr
+        - rowserrcheck
+        - sqlclosecheck
+        - structcheck
+        - tparallel
+        - wastedassign
+
         # To see a list of enabled/disabled by current configuration linters:
         # golangci-lint linters
 
