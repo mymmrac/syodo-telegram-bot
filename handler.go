@@ -33,8 +33,8 @@ func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.B
 func (h *Handler) RegisterHandlers() {
 	err := h.bot.SetMyCommands(&telego.SetMyCommandsParams{
 		Commands: []telego.BotCommand{
-			{"start", h.text.Get("startDescription", nil)},
-			{"help", h.text.Get("helpDescription", nil)},
+			{Command: "start", Description: h.text.Get("startDescription", nil)},
+			{Command: "help", Description: h.text.Get("helpDescription", nil)},
 		},
 	})
 	if err != nil {
