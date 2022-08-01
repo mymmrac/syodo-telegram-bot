@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 )
@@ -23,7 +24,7 @@ func (t Text) Get(key string, data any) string {
 	return buf.String()
 }
 
-// LoadText loads text from specified file
+// LoadText loads text templates from specified file
 func LoadText(filename string) (Text, error) {
 	var textData map[string]string
 
@@ -35,9 +36,10 @@ func LoadText(filename string) (Text, error) {
 	text := make(map[string]*template.Template, len(textData))
 
 	for key, value := range textData {
-		text[key], err = template.New(key).Parse(value)
+		trimmedValue := strings.TrimSpace(value)
+		text[key], err = template.New(key).Parse(trimmedValue)
 		if err != nil {
-			return nil, fmt.Errorf("parsing text of %q with value %q, error: %w", key, value, err)
+			return nil, fmt.Errorf("parsing text of %q with value %q, error: %w", key, trimmedValue, err)
 		}
 	}
 
