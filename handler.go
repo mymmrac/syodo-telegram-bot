@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	tu "github.com/mymmrac/telego/telegoutil"
@@ -13,17 +11,19 @@ import (
 
 // Handler represents update handler
 type Handler struct {
-	cfg *config.Config
-	log logger.Logger
-	bh  *th.BotHandler
+	cfg  *config.Config
+	log  logger.Logger
+	bh   *th.BotHandler
+	text Text
 }
 
 // NewHandler creates new Handler
-func NewHandler(cfg *config.Config, log logger.Logger, bh *th.BotHandler) *Handler {
+func NewHandler(cfg *config.Config, log logger.Logger, bh *th.BotHandler, text Text) *Handler {
 	return &Handler{
-		cfg: cfg,
-		log: log,
-		bh:  bh,
+		cfg:  cfg,
+		log:  log,
+		bh:   bh,
+		text: text,
 	}
 }
 
@@ -34,8 +34,11 @@ func (h *Handler) RegisterHandlers() {
 
 func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
 	chatID := message.Chat.ID
-	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("Hello %s", message.From.FirstName)))
+	_, err := bot.SendMessage(
+		tu.Message(tu.ID(chatID), h.text.Get("start", message)).
+			WithParseMode(telego.ModeHTML),
+	)
 	if err != nil {
-		h.log.Errorf("Send message: %s", err)
+		h.log.Errorf("Send start message: %s", err)
 	}
 }

@@ -23,6 +23,7 @@ var (
 	configFile       = flag.String("config", "config.toml", "Config file")
 	versionRequest   = flag.Bool("version", false, "Version")
 	buildInfoRequest = flag.Bool("build-info", false, "Build info")
+	textFile         = flag.String("text", "text.toml", "Text file")
 )
 
 func main() {
@@ -53,8 +54,17 @@ func main() {
 	assert(err == nil, fmt.Errorf("configure logger: %w", err))
 	// ==== Logger End ====
 
-	// ==== Bot Setup ====
+	start(cfg, log)
+}
+
+func start(cfg *config.Config, log *logger.Log) {
+	// ==== Dependencies Setup ====
 	log.Info("Setting up")
+
+	text, err := LoadText(*textFile)
+	if err != nil {
+		log.Fatalf("Read text file: %s", err)
+	}
 
 	bot, err := telego.NewBot(cfg.Settings.BotToken, telego.WithLogger(log), telego.WithHealthCheck())
 	if err != nil {
@@ -70,12 +80,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Create bot handler: %s", err)
 	}
+	// ==== Dependencies Setup End ====
 
-	handler := NewHandler(cfg, log, bh)
+	handler := NewHandler(cfg, log, bh, text)
 	handler.RegisterHandlers()
-	// ==== Bot Setup End ====
 
-	// ==== Stop Handling ====
+	// ==== Stopping ====
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan struct{}, 1)
@@ -98,7 +108,7 @@ func main() {
 
 	<-done
 	log.Info("Done")
-	// ==== Stop Handling End ====
+	// ==== Stopping End ====
 }
 
 func displayBuildInfo() {

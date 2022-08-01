@@ -1,0 +1,2 @@
+# Start cmd, Message as data
+start = "Hello <i>{{ .From.FirstName }}</i>"
