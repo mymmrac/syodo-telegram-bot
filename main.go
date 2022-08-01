@@ -40,6 +40,8 @@ func main() {
 	}
 	// ==== Build Info End ====
 
+	fmt.Println("Starting...")
+
 	// ==== Config ====
 	cfg, err := config.LoadConfig(*configFile)
 	assert(err == nil, fmt.Errorf("load config: %w", err))

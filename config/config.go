@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
@@ -33,6 +34,11 @@ func LoadConfig(filename string) (*Config, error) {
 		return nil, fmt.Errorf("no %q environment variable", providerTokenEnv)
 	}
 
+	validate := validator.New()
+	if err = validate.Struct(cfg); err != nil {
+		return nil, fmt.Errorf("config validation: %w", err)
+	}
+
 	return cfg, nil
 }
 
@@ -44,16 +50,16 @@ type Config struct {
 
 // Log represents logger config
 type Log struct {
-	Level       string
-	Destination string
-	Filename    string
+	Level       string `validate:"required,oneof=error warn info debug"`
+	Destination string `validate:"required,oneof=stdout stderr file"`
+	Filename    string `validate:"required_if=Destination file"`
 }
 
 // Settings represents general settings
 type Settings struct {
-	BotToken      string
-	ProviderToken string
-	StopTimeout   time.Duration
+	BotToken      string        `validate:"required"`
+	ProviderToken string        `validate:"required"`
+	StopTimeout   time.Duration `validate:"required,gte=0"`
 }
 
 const (
