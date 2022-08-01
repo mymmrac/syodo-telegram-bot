@@ -49,10 +49,6 @@ func main() {
 	log := logger.NewLog(golog.New())
 	err = cfg.ConfigureLogger(log)
 	assert(err == nil, fmt.Errorf("configure logger: %w", err))
-	defer func() {
-		err = log.Close()
-		assert(err == nil, fmt.Errorf("close logger: %w", err))
-	}()
 	// ==== Logger End ====
 
 	// ==== Bot Setup ====
@@ -88,6 +84,9 @@ func main() {
 
 		bot.StopLongPulling()
 		bh.Stop()
+
+		err = log.Close()
+		assert(err == nil, fmt.Errorf("close logger: %w", err))
 
 		done <- struct{}{}
 	}()

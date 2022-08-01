@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/kataras/golog"
 )
@@ -46,9 +47,11 @@ func NewLog(log *golog.Logger) *Log {
 	}
 }
 
+const logFilePerm = 0o600
+
 // SetOutputFile sets output file for logger
 func (l *Log) SetOutputFile(filename string) error {
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(filepath.Clean(filename), os.O_CREATE|os.O_WRONLY|os.O_APPEND, logFilePerm)
 	if err != nil {
 		return fmt.Errorf("failed to create log file: %w", err)
 	}

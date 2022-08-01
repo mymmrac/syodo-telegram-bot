@@ -150,6 +150,9 @@ issues:
         -   linters:
                 - lll
             source: "^//go:generate "
+        -   linters:
+                - stylecheck
+            text: "ST1000:"
 
     # Independently of option `exclude` we use default exclude patterns,
     # it can be disabled by this option. To list all
