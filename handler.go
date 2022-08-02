@@ -49,7 +49,19 @@ func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
 	chatID := message.Chat.ID
 	_, err := bot.SendMessage(
 		tu.Message(tu.ID(chatID), h.text.Get("start", message)).
-			WithParseMode(telego.ModeHTML),
+			WithParseMode(telego.ModeHTML).
+			WithReplyMarkup(tu.InlineKeyboard(
+				tu.InlineKeyboardRow(
+					tu.InlineKeyboardButton(h.text.Get("startSiteButton", nil)).
+						WithURL(h.text.Get("siteURL", nil)),
+				),
+				tu.InlineKeyboardRow(
+					tu.InlineKeyboardButton(h.text.Get("startInstagramButton", nil)).
+						WithURL(h.text.Get("instagramURL", nil)),
+					tu.InlineKeyboardButton(h.text.Get("startFacebookButton", nil)).
+						WithURL(h.text.Get("facebookURL", nil)),
+				),
+			)),
 	)
 	if err != nil {
 		h.log.Errorf("Send start message: %s", err)

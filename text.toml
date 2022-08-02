@@ -1,6 +1,6 @@
 # Start cmd description
 startDescription = "Start"
-# Start cmd, data: Message
+# Start cmd, contains buttons for site, instagram and facebook, data: Message
 start = """
 Hello <i>{{ .From.FirstName }}</i>
 """
@@ -11,3 +11,13 @@ helpDescription = "Help"
 help = """
 Help
 """
+
+# Buttons text
+siteButtonText = "syodo.com"
+instagramButtonText = "Instagram"
+facebookButtonText = "Facebook"
+
+# URLs
+siteURL = "https://syodo.com.ua"
+instagramURL = "https://www.instagram.com/syodo.sushi"
+facebookURL = "https://www.facebook.com/syodo.sushi.lviv"
