@@ -14,7 +14,10 @@
             "ESNext",
             "DOM"
         ],
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "typeRoots": [
+            "./node_modules/telegram-bots-webapps-types"
+        ]
     },
     "include": [
         "src/**/*.ts",

@@ -14,5 +14,5 @@ function setThemeClass() {
     document.documentElement.className = window.Telegram.WebApp.colorScheme
 }
 
-window.Telegram.WebApp.onEvent("theme_changed", setThemeClass)
+window.Telegram.WebApp.onEvent("themeChanged", setThemeClass)
 setThemeClass()
