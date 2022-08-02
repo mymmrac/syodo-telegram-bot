@@ -23,7 +23,7 @@ var (
 	configFile       = flag.String("config", "config.toml", "Config file")
 	versionRequest   = flag.Bool("version", false, "Version")
 	buildInfoRequest = flag.Bool("build-info", false, "Build info")
-	textFile         = flag.String("text", "text.toml", "Text file")
+	textFile         = flag.String("text", "text.toml", "Text data file")
 )
 
 func main() {
@@ -61,9 +61,9 @@ func start(cfg *config.Config, log *logger.Log) {
 	// ==== Dependencies Setup ====
 	log.Info("Setting up")
 
-	text, err := LoadText(*textFile)
+	textData, err := LoadTextData(*textFile)
 	if err != nil {
-		log.Fatalf("Read text file: %s", err)
+		log.Fatalf("Read text data file: %s", err)
 	}
 
 	bot, err := telego.NewBot(cfg.Settings.BotToken, telego.WithLogger(log), telego.WithHealthCheck())
@@ -82,7 +82,7 @@ func start(cfg *config.Config, log *logger.Log) {
 	}
 	// ==== Dependencies Setup End ====
 
-	handler := NewHandler(cfg, log, bot, bh, text)
+	handler := NewHandler(cfg, log, bot, bh, textData)
 	handler.RegisterHandlers()
 
 	// ==== Stopping ====

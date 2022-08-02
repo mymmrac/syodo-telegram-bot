@@ -21,3 +21,8 @@ facebookButtonText = "Facebook"
 siteURL = "https://syodo.com.ua"
 instagramURL = "https://www.instagram.com/syodo.sushi"
 facebookURL = "https://www.facebook.com/syodo.sushi.lviv"
+
+# Menu button text
+menuButton = "Order"
+# Web app URL
+webAppURL = "https://syodo.com.ua"
