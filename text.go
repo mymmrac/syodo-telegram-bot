@@ -41,10 +41,10 @@ func LoadTextData(filename string) (TextData, error) {
 	textData := make(map[string]*template.Template, len(textValues))
 
 	for key, value := range textValues {
-		trimmedValue := strings.TrimSpace(value)
-		textData[key], err = template.New(key).Parse(trimmedValue)
+		transformedValue := strings.TrimSpace(strings.ReplaceAll(value, "|\n", ""))
+		textData[key], err = template.New(key).Parse(transformedValue)
 		if err != nil {
-			return nil, fmt.Errorf("parsing text data of %q with value %q, error: %w", key, trimmedValue, err)
+			return nil, fmt.Errorf("parsing text data of %q with value %q, error: %w", key, transformedValue, err)
 		}
 	}
 

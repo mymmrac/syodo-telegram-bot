@@ -1,19 +1,30 @@
 # Start cmd description
-startDescription = "Start"
+startDescription = "З чого почати?"
 # Start cmd, contains buttons for site, instagram and facebook, data: Message
 start = """
-Hello <i>{{ .From.FirstName }}</i>
+Привіт <i>{{ .From.FirstName }}</i> 👋
+
+Я SYODŌ 🍱 бот, допоможу Вам замовити свої найсмачніші суші (та не тільки) прямо з Телеграму.
+
+Допомога: /help
+
+Скористайтеся кнопкю ▼ <u><b>Меню</b></u> ▼, щоб зробити замовлення.
 """
 
 # Help cmd description
-helpDescription = "Help"
+helpDescription = "Допомога"
 # Help cmd, data: Message
 help = """
-Help
+Щоб зробити замовлення просто нажміть на кнопку ▼ <u><b>Меню</b></u> ▼, та почніть обирати ваше замовлення, після чого |
+переконайтеся, що все введено вірно та продовжіть з оплатою прямо у Телеграм.
+
+За допомогою Ви можете звертися за телефоном: +380677229345
+
+Або за посиланнями ▼ нижче ▼
 """
 
 # Buttons text
-siteButtonText = "syodo.com"
+siteButtonText = "syodo.com.ua"
 instagramButtonText = "Instagram"
 facebookButtonText = "Facebook"
 
@@ -23,6 +34,6 @@ instagramURL = "https://www.instagram.com/syodo.sushi"
 facebookURL = "https://www.facebook.com/syodo.sushi.lviv"
 
 # Menu button text
-menuButton = "Order"
+menuButton = "Меню"
 # Web app URL
 webAppURL = "https://syodo.com.ua"
