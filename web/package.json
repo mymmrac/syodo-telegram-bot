@@ -1,0 +1,27 @@
+{
+    "name": "syodo-bot-web",
+    "private": true,
+    "version": "0.1.0",
+    "scripts": {
+        "dev": "vite",
+        "build": "vue-tsc --noEmit && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "axios": "^0.27.2",
+        "pinia": "^2.0.17",
+        "vue": "^3.2.37"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.2",
+        "@types/node": "^18.6.3",
+        "@vitejs/plugin-vue": "^3.0.0",
+        "autoprefixer": "^10.4.8",
+        "postcss": "^8.4.14",
+        "sass": "^1.54.0",
+        "tailwindcss": "^3.1.7",
+        "typescript": "^4.6.4",
+        "vite": "^3.0.0",
+        "vue-tsc": "^0.38.4"
+    }
+}
