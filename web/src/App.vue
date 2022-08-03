@@ -45,5 +45,3 @@ tg.onEvent("mainButtonClicked", () => {
   }
 })
 </script>
-
-<style scoped lang="scss"></style>

@@ -7,13 +7,13 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                "tg-bg": "var(--tg-theme-bg-color)",
-                "tg-text": "var(--tg-theme-text-color)",
-                "tg-hint": "var(--tg-theme-hint-color)",
-                "tg-link": "var(--tg-theme-link-color)",
-                "tg-button": "var(--tg-theme-button-color)",
-                "tg-button-text": "var(--tg-theme-button-text-color)",
-                "tg-secondary-bg": "var(--tg-theme-secondary-bg-color)",
+                "tg-bg": "var(--tg-theme-bg-color, #ffffff)",
+                "tg-text": "var(--tg-theme-text-color, #222222)",
+                "tg-hint": "var(--tg-theme-hint-color, #a8a8a8)",
+                "tg-link": "var(--tg-theme-link-color, #2678b6)",
+                "tg-button": "var(--tg-theme-button-color, #50a8eb)",
+                "tg-button-text": "var(--tg-theme-button-text-color, #ffffff)",
+                "tg-secondary-bg": "var(--tg-theme-secondary-bg-color, #f0f0f0)",
             },
         },
     },
