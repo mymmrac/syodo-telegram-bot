@@ -35,6 +35,7 @@ const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 const errors: Ref<any[]> = ref([])
 
 function sendError(type: string, data: any) {
+  tg.HapticFeedback.notificationOccurred("error")
   console.error(`Error type:${ type }, data: ${ data }`)
   tg.sendData(`${ type }:${ data }`)
 }

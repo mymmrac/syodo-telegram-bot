@@ -1,6 +1,8 @@
 <template>
   <div class="rounded p-2 border border-tg-hint flex flex-col justify-between">
-    <img :src="getImage(product)" :alt="product.title">
+    <div class="aspect-square rounded bg-white grid place-content-center">
+      <img :src="getImage(product)" :alt="product.title" class="rounded">
+    </div>
     <div>
       <p>{{ product.title }}</p>
       <div class="flex justify-between">
@@ -24,18 +26,23 @@
 <script setup lang="ts">
 import { getImage, getPrice, Product } from "@/types"
 import { Ref, ref } from "vue"
+import { TelegramWebApps } from "telegram-bots-webapps-types"
 
 defineProps<{
   product: Product
 }>()
 
+const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
+
 const amount: Ref<number> = ref(0)
 
 function add() {
+  tg.HapticFeedback.selectionChanged()
   amount.value++
 }
 
 function remove() {
+  tg.HapticFeedback.selectionChanged()
   amount.value--
 }
 </script>

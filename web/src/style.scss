@@ -8,4 +8,11 @@ html, body {
 
 button {
   @apply bg-tg-button text-tg-button-text;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
