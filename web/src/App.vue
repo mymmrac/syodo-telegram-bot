@@ -1,20 +1,33 @@
 <template>
+  <!-- Telegram Colors Demo -->
+  <div v-if="false">
+    <div class="bg-tg-bg">tg-bg</div>
+    <div class="bg-tg-text text-tg-bg">tg-text</div>
+    <div class="bg-tg-hint">tg-hint</div>
+    <div class="bg-tg-link">tg-link</div>
+    <div class="bg-tg-button">tg-button</div>
+    <div class="bg-tg-button-text">tg-button-text</div>
+    <div class="bg-tg-secondary-bg">tg-secondary-bg</div>
+  </div>
+
   <div v-if="errors.length > 0" class="text-red-500">
     Виникла помилка: {{ errors[0] }}
   </div>
   <div v-else>
-    <div v-for="product in products" :key="product.id">
-      {{ product.title }} - {{ product.price }}
-      <img :src="product.image_original || product.image" :alt="product.title" width="100">
-    </div>
+    <category-list :categories="categories"></category-list>
+    <hr class="border-tg-hint">
+    <product-list :products="products"></product-list>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ComputedRef, Ref, ref, watch } from "vue"
-import { GeneralSettings, Products, SubCategories } from "./definitions"
+import { Products } from "./types"
 import syodoAPI from "./syodo"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
+import ProductList from "@/components/ProductList.vue"
+import CategoryList from "@/components/CategoryList.vue"
+import { categories } from "@/definitions"
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
@@ -33,10 +46,7 @@ if (major < 6 || (major == 6 && minor < 1)) {
 }
 
 // Loaders
-const subCategoriesLoaded: Ref<boolean> = ref(false)
-const productsLoaded: Ref<boolean> = ref(false)
-
-const loaded: ComputedRef<boolean> = computed(() => subCategoriesLoaded.value && productsLoaded.value)
+const loaded: Ref<boolean> = ref(false)
 
 watch(loaded, (isLoaded) => {
   if (!isLoaded) {
@@ -47,28 +57,12 @@ watch(loaded, (isLoaded) => {
   tg.ready()
 })
 
-// SubCategories & Products
-const subCategories: Ref<SubCategories> = ref([])
+// Products
 const allProducts: Ref<Products> = ref([])
 
 const products: ComputedRef<Products> = computed(() => {
   return allProducts.value.filter(p => p.category_id !== "14")
 })
-
-syodoAPI.get<GeneralSettings>("/generalsettings/subcategories")
-    .then(response => {
-      if (response.status !== 200) {
-        console.error(response)
-        errors.value.push("Хмм, не вдалося завантажити категорії")
-        return
-      }
-      subCategories.value = response.data[0].values
-    })
-    .catch(err => {
-      console.error(err)
-      errors.value.push("Хмм, не вдалося завантажити категорії")
-    })
-    .finally(() => subCategoriesLoaded.value = true)
 
 syodoAPI.get<Products>("/products")
     .then(response => {
@@ -83,5 +77,5 @@ syodoAPI.get<Products>("/products")
       console.error(err)
       errors.value.push("Хмм, не вдалося завантажити меню")
     })
-    .finally(() => productsLoaded.value = true)
+    .finally(() => loaded.value = true)
 </script>

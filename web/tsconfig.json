@@ -17,7 +17,12 @@
         "skipLibCheck": true,
         "typeRoots": [
             "./node_modules/telegram-bots-webapps-types"
-        ]
+        ],
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
     "include": [
         "src/**/*.ts",
