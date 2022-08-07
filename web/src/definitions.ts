@@ -1,12 +1,16 @@
 import { Categories, SubCategories } from "@/types"
 
+function href(path: string): string {
+    return new URL(import.meta.env.BASE_URL + path, import.meta.url).href
+}
+
 const categories: Categories = [
-    { id: "13", title: "Суші", icon: "/img/sushi.png" },
-    { id: "7", title: "Роли", icon: "/img/roles.png" },
-    { id: "8", title: "Сети", icon: "/img/sets.png" },
-    { id: "9", title: "Напої", icon: "/img/drinks.png" },
-    { id: "10", title: "Соуси", icon: "/img/sauces.png" },
-    { id: "11", title: "Десерти", icon: "/img/desserts.png" },
+    { id: "13", title: "Суші", icon: href("img/sushi.png") },
+    { id: "7", title: "Роли", icon: href("img/roles.png") },
+    { id: "8", title: "Сети", icon: href("img/sets.png") },
+    { id: "9", title: "Напої", icon: href("img/drinks.png") },
+    { id: "10", title: "Соуси", icon: href("img/sauces.png") },
+    { id: "11", title: "Десерти", icon: href("img/desserts.png") },
 ]
 
 const subCategories: SubCategories = [
