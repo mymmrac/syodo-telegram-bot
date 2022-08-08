@@ -3,11 +3,23 @@
     <div v-show="!checkout">
       <category-list :categories="categories" :selected-category="selectedCategory"
                      @categorySelected="categorySelected"></category-list>
+      <div class="w-full px-2 pb-2 flex gap-2">
+        <input type="text" placeholder="Пошук..." v-model="search"
+               class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text">
+        <button class="rounded px-2" @click="search = ''">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+               class="bi bi-backspace-fill" viewBox="0 0 16 16">
+            <path
+                d="M15.683 3a2 2 0 0 0-2-2h-7.08a2 2 0 0 0-1.519.698L.241 7.35a1 1 0 0 0 0 1.302l4.843 5.65A2 2 0 0 0 6.603 15h7.08a2 2 0 0 0 2-2V3zM5.829 5.854a.5.5 0 1 1 .707-.708l2.147 2.147 2.146-2.147a.5.5 0 1 1 .707.708L9.39 8l2.146 2.146a.5.5 0 0 1-.707.708L8.683 8.707l-2.147 2.147a.5.5 0 0 1-.707-.708L7.976 8 5.829 5.854z"/>
+          </svg>
+        </button>
+      </div>
       <hr class="border-tg-hint">
-      <product-list :products="products" :category="selectedCategory" @productUpdate="updateOrder"></product-list>
+      <product-list :products="products" :category="selectedCategory" :search="search"
+                    @productUpdate="updateOrder"></product-list>
 
       <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
-              class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
+              class="fixed bottom-8 right-2 text-tg-button rounded-full bg-tg-button-text shadow-xl">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
           <path
               d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
@@ -71,6 +83,8 @@ onMounted(() => {
 const allProducts: Ref<Products> = ref([])
 
 const selectedCategory: Ref<string> = ref(categories[0].id)
+
+const search: Ref<string> = ref("")
 
 function categorySelected(id: string) {
   selectedCategory.value = id

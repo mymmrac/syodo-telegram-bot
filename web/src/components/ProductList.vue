@@ -1,7 +1,7 @@
 <template>
   <div class="p-2 grid grid-cols-2 gap-2">
     <transition-group name="m-fade">
-      <the-product v-for="product in products" :key="product.id" v-show="product.category_id === category"
+      <the-product v-for="product in products" :key="product.id" v-show="match(product)"
                    :product="product" @productUpdate="e => $emit('productUpdate', e)"></the-product>
     </transition-group>
   </div>
@@ -10,16 +10,37 @@
 
 <script setup lang="ts">
 import TheProduct from "@/components/TheProduct.vue"
-import { OrderProduct, Products } from "@/types"
+import { OrderProduct, Product, Products } from "@/types"
 
-defineProps<{
+const props = defineProps<{
   products: Products
   category: string
+  search: string
 }>()
 
 defineEmits<{
   (e: "productUpdate", product: OrderProduct): void
 }>()
+
+function match(product: Product): boolean {
+  if (product.category_id !== props.category) {
+    return false
+  }
+
+  if (props.search === "") {
+    return true
+  }
+
+  const data = `${ product.title.toLowerCase() } ${ product.description.toLowerCase() }`
+  const searchWords = props.search.toLowerCase().split(" ")
+  for (let i = 0; i < searchWords.length; i++) {
+    if (!data.includes(searchWords[i])) {
+      return false
+    }
+  }
+
+  return true
+}
 </script>
 
 <style scoped lang="scss">

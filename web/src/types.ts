@@ -10,6 +10,7 @@ export type Product = {
     price: string
     title: string
     showOnMain: boolean
+    description: string
 }
 
 export type Products = Product[]
