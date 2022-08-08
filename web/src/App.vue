@@ -1,10 +1,9 @@
 <template>
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
-      <category-list :categories="categories"></category-list>
+      <category-list :categories="categories" @categorySelected="categorySelected"></category-list>
       <hr class="border-tg-hint">
-      <hr class="border-tg-hint">
-      <product-list :products="products" @productUpdate="updateOrder"></product-list>
+      <product-list :products="products" :category="selectedCategory" @productUpdate="updateOrder"></product-list>
 
       <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
               class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
@@ -70,8 +69,14 @@ onMounted(() => {
 // Products
 const allProducts: Ref<Products> = ref([])
 
+const selectedCategory: Ref<string> = ref(categories[0].id)
+
+function categorySelected(id: string) {
+  selectedCategory.value = id
+}
+
 const products: ComputedRef<Products> = computed(() => {
-  return allProducts.value.filter(p => p.category_id !== "14")
+  return allProducts.value.filter(p => p.category_id !== "14" && p.showOnMain)
 })
 
 syodoAPI.get<Products>("/products")

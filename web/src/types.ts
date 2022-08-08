@@ -9,6 +9,7 @@ export type Product = {
     id: string
     price: string
     title: string
+    showOnMain: boolean
 }
 
 export type Products = Product[]
