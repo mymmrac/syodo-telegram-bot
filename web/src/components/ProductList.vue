@@ -5,6 +5,7 @@
                    :product="product" @productUpdate="e => $emit('productUpdate', e)"></the-product>
     </transition-group>
   </div>
+  <div class="h-[96px]"></div>
 </template>
 
 <script setup lang="ts">

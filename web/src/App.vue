@@ -1,7 +1,8 @@
 <template>
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
-      <category-list :categories="categories" @categorySelected="categorySelected"></category-list>
+      <category-list :categories="categories" :selected-category="selectedCategory"
+                     @categorySelected="categorySelected"></category-list>
       <hr class="border-tg-hint">
       <product-list :products="products" :category="selectedCategory" @productUpdate="updateOrder"></product-list>
 
@@ -76,7 +77,7 @@ function categorySelected(id: string) {
 }
 
 const products: ComputedRef<Products> = computed(() => {
-  return allProducts.value.filter(p => p.category_id !== "14" && p.showOnMain)
+  return allProducts.value.filter(p => p.category_id !== "14")
 })
 
 syodoAPI.get<Products>("/products")

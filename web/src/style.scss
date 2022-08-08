@@ -16,9 +16,11 @@ html {
   }
 }
 
-button, a {
+button {
   @apply bg-tg-button text-tg-button-text;
+}
 
+button, a, image, div {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -moz-user-select: none;
