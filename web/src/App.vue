@@ -13,15 +13,21 @@
   <div v-if="errors.length > 0" class="text-red-500">
     Виникла помилка: {{ errors[0] }}
   </div>
-  <template v-else-if="checkout === false">
-    <category-list :categories="categories"></category-list>
-    <hr class="border-tg-hint">
-    <hr class="border-tg-hint">
-    <product-list :products="products" @productUpdate="updateOrder"></product-list>
-  </template>
   <template v-else>
-    <p>Total Price: {{ totalPrice }}</p>
-    <pre>{{ order }}</pre>
+    <transition name="m-fade" mode="out-in">
+      <div v-show="!checkout">
+        <category-list :categories="categories"></category-list>
+        <hr class="border-tg-hint">
+        <hr class="border-tg-hint">
+        <product-list :products="products" @productUpdate="updateOrder"></product-list>
+      </div>
+    </transition>
+    <transition name="m-fade" mode="out-in">
+      <div v-show="checkout">
+        <p>Total Price: {{ totalPrice }}</p>
+        <pre>{{ order }}</pre>
+      </div>
+    </transition>
   </template>
 </template>
 
@@ -104,9 +110,18 @@ function updateOrder(product: OrderProduct) {
   }
 }
 
+const prevScroll: Ref<number> = ref(0)
+
 tg.MainButton.onClick(() => {
   if (!checkout.value) {
+    prevScroll.value = window.scrollY
+
     checkout.value = true
+    window.scrollTo({ // TODO: Fix scrolling
+      top: 0,
+      behavior: "auto",
+    })
+
     tg.BackButton.show()
     tg.MainButton.setText(`Замовити - ${ priceToText(totalPrice.value) }`)
   } else {
@@ -116,6 +131,11 @@ tg.MainButton.onClick(() => {
 
 tg.BackButton.onClick(() => {
   checkout.value = false
+  window.scrollTo({
+    top: prevScroll.value,
+    behavior: "auto",
+  })
+
   tg.BackButton.hide()
   tg.MainButton.setText("Переглянути замовлення")
 })
@@ -128,3 +148,24 @@ const totalPrice: ComputedRef<number> = computed(() => {
   return price
 })
 </script>
+
+<style scoped lang="scss">
+.m-fade {
+  &-enter-active,
+  &-leave-active {
+    transition: all 0.4s ease;
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  &-leave-active {
+    position: absolute;
+    left: 0;
+    right: 0;
+  }
+}
+</style>
