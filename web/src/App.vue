@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { computed, ComputedRef, onMounted, Ref, ref, watch } from "vue"
 import { Order, OrderProduct, priceToText, Products } from "./types"
-import syodoAPI from "./syodo"
+import syodoAPI from "./syodo-api"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 import ProductList from "@/components/ProductList.vue"
 import CategoryList from "@/components/CategoryList.vue"
