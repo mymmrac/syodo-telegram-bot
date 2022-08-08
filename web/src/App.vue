@@ -1,42 +1,26 @@
 <template>
-  <!-- Telegram Colors Demo -->
-  <div v-if="false">
-    <div class="bg-tg-bg">tg-bg</div>
-    <div class="bg-tg-text text-tg-bg">tg-text</div>
-    <div class="bg-tg-hint">tg-hint</div>
-    <div class="bg-tg-link">tg-link</div>
-    <div class="bg-tg-button">tg-button</div>
-    <div class="bg-tg-button-text">tg-button-text</div>
-    <div class="bg-tg-secondary-bg">tg-secondary-bg</div>
-  </div>
+  <transition name="m-fade" mode="out-in">
+    <div v-show="!checkout">
+      <category-list :categories="categories"></category-list>
+      <hr class="border-tg-hint">
+      <hr class="border-tg-hint">
+      <product-list :products="products" @productUpdate="updateOrder"></product-list>
 
-  <div v-if="errors.length > 0" class="text-red-500">
-    Виникла помилка: {{ errors[0] }}
-  </div>
-  <template v-else>
-    <transition name="m-fade" mode="out-in">
-      <div v-show="!checkout">
-        <category-list :categories="categories"></category-list>
-        <hr class="border-tg-hint">
-        <hr class="border-tg-hint">
-        <product-list :products="products" @productUpdate="updateOrder"></product-list>
-
-        <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
-                class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-            <path
-                d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
-          </svg>
-        </button>
-      </div>
-    </transition>
-    <transition name="m-fade" mode="in-out">
-      <div v-show="checkout">
-        <p>Total Price: {{ totalPrice }}</p>
-        <pre>{{ order }}</pre>
-      </div>
-    </transition>
-  </template>
+      <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
+              class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+          <path
+              d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
+        </svg>
+      </button>
+    </div>
+  </transition>
+  <transition name="m-fade" mode="in-out">
+    <div v-show="checkout">
+      <p>Total Price: {{ totalPrice }}</p>
+      <pre>{{ order }}</pre>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -51,11 +35,9 @@ import { categories } from "@/definitions"
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
 // Errors
-const errors: Ref<any[]> = ref([])
-
 function sendError(type: string, data: any) {
-  tg.HapticFeedback.notificationOccurred("error")
   console.error(`Error type:${ type }, data: ${ data }`)
+  tg.HapticFeedback.notificationOccurred("error")
   tg.sendData(`${ type }:${ data }`)
 }
 
@@ -96,14 +78,14 @@ syodoAPI.get<Products>("/products")
     .then(response => {
       if (response.status !== 200) {
         console.error(response)
-        errors.value.push("Хмм, не вдалося завантажити меню")
+        sendError("load-products", "Хмм, не вдалося завантажити меню")
         return
       }
       allProducts.value = response.data
     })
     .catch(err => {
       console.error(err)
-      errors.value.push("Хмм, не вдалося завантажити меню")
+      sendError("load-products", "Хмм, не вдалося завантажити меню")
     })
     .finally(() => loaded.value = true)
 
