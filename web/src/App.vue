@@ -4,7 +4,7 @@
       <category-list :categories="categories" :selected-category="selectedCategory"
                      @categorySelected="categorySelected"></category-list>
       <div class="w-full px-2 pb-2 flex gap-2">
-        <input type="text" placeholder="Пошук..." v-model="search"
+        <input type="text" placeholder="Пошук..." v-model.trim="search"
                class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text">
         <button class="rounded px-2" @click="search = ''">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
