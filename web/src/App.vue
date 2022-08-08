@@ -15,19 +15,19 @@
   </div>
   <template v-else>
     <transition name="m-fade" mode="out-in">
-      <div v-show="!checkout" id="menu">
+      <div v-show="!checkout">
         <category-list :categories="categories"></category-list>
         <hr class="border-tg-hint">
         <hr class="border-tg-hint">
         <product-list :products="products" @productUpdate="updateOrder"></product-list>
 
-        <a href="#menu" :class="scrollPos < 256 ? 'hidden' : ''"
-           class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
+        <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
+                class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
             <path
                 d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
           </svg>
-        </a>
+        </button>
       </div>
     </transition>
     <transition name="m-fade" mode="in-out">
@@ -126,10 +126,14 @@ function updateOrder(product: OrderProduct) {
   }
 }
 
+function scrollToTop(behavior: ScrollBehavior = "auto") {
+  window.scrollTo({ top: 0, behavior: behavior })
+}
+
 tg.MainButton.onClick(() => {
   if (!checkout.value) {
     checkout.value = true
-    window.scrollTo({ top: 0, behavior: "auto" })
+    scrollToTop()
 
     tg.BackButton.show()
     tg.MainButton.setText(`Замовити - ${ priceToText(totalPrice.value) }`)
@@ -140,7 +144,7 @@ tg.MainButton.onClick(() => {
 
 tg.BackButton.onClick(() => {
   checkout.value = false
-  window.scrollTo({ top: 0, behavior: "auto" })
+  scrollToTop()
 
   tg.BackButton.hide()
   tg.MainButton.setText("Переглянути замовлення")
