@@ -33,8 +33,8 @@ function match(product: Product): boolean {
 
   const data = `${ product.title.toLowerCase() } ${ product.description.toLowerCase() }`
   const searchWords = props.search.toLowerCase().split(" ")
-  for (let i = 0; i < searchWords.length; i++) {
-    if (!data.includes(searchWords[i])) {
+  for (const searchWord of searchWords) {
+    if (!data.includes(searchWord)) {
       return false
     }
   }
