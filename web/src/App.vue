@@ -15,14 +15,22 @@
   </div>
   <template v-else>
     <transition name="m-fade" mode="out-in">
-      <div v-show="!checkout">
+      <div v-show="!checkout" id="menu">
         <category-list :categories="categories"></category-list>
         <hr class="border-tg-hint">
         <hr class="border-tg-hint">
         <product-list :products="products" @productUpdate="updateOrder"></product-list>
+
+        <a href="#menu" :class="scrollPos < 256 ? 'hidden' : ''"
+           class="fixed bottom-8 right-2 text-tg-link rounded-full bg-tg-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+            <path
+                d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
+          </svg>
+        </a>
       </div>
     </transition>
-    <transition name="m-fade" mode="out-in">
+    <transition name="m-fade" mode="in-out">
       <div v-show="checkout">
         <p>Total Price: {{ totalPrice }}</p>
         <pre>{{ order }}</pre>
@@ -32,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ComputedRef, Ref, ref, watch } from "vue"
+import { computed, ComputedRef, onMounted, Ref, ref, watch } from "vue"
 import { Order, OrderProduct, priceToText, Products } from "./types"
 import syodoAPI from "./syodo"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
@@ -67,6 +75,14 @@ watch(loaded, (isLoaded) => {
 
   console.log("Loaded")
   tg.ready()
+})
+
+const scrollPos: Ref<number> = ref(window.scrollY)
+
+onMounted(() => {
+  window.addEventListener("scroll", () => {
+    scrollPos.value = window.scrollY
+  })
 })
 
 // Products
@@ -110,17 +126,10 @@ function updateOrder(product: OrderProduct) {
   }
 }
 
-const prevScroll: Ref<number> = ref(0)
-
 tg.MainButton.onClick(() => {
   if (!checkout.value) {
-    prevScroll.value = window.scrollY
-
     checkout.value = true
-    window.scrollTo({ // TODO: Fix scrolling
-      top: 0,
-      behavior: "auto",
-    })
+    window.scrollTo({ top: 0, behavior: "auto" })
 
     tg.BackButton.show()
     tg.MainButton.setText(`Замовити - ${ priceToText(totalPrice.value) }`)
@@ -131,10 +140,7 @@ tg.MainButton.onClick(() => {
 
 tg.BackButton.onClick(() => {
   checkout.value = false
-  window.scrollTo({
-    top: prevScroll.value,
-    behavior: "auto",
-  })
+  window.scrollTo({ top: 0, behavior: "auto" })
 
   tg.BackButton.hide()
   tg.MainButton.setText("Переглянути замовлення")
