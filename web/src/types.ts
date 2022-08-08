@@ -17,8 +17,12 @@ export function getImage(product: Product): string {
     return product.image || product.image_original
 }
 
+export function priceToText(price: number): string {
+    return (price / 100).toFixed(2) + "грн"
+}
+
 export function getPrice(product: Product): string {
-    return (Number(product.price) / 100).toFixed(2) + "грн"
+    return priceToText(Number(product.price))
 }
 
 export type Category = {
@@ -35,3 +39,13 @@ export type SubCategory = {
 }
 
 export type SubCategories = SubCategory[]
+
+export type OrderProduct = {
+    id: string
+    amount: number
+    product: Product
+}
+
+export type Order = {
+    products: Map<string, OrderProduct>
+}

@@ -13,16 +13,21 @@
   <div v-if="errors.length > 0" class="text-red-500">
     Виникла помилка: {{ errors[0] }}
   </div>
-  <div v-else>
+  <template v-else-if="checkout === false">
     <category-list :categories="categories"></category-list>
     <hr class="border-tg-hint">
-    <product-list :products="products"></product-list>
-  </div>
+    <hr class="border-tg-hint">
+    <product-list :products="products" @productUpdate="updateOrder"></product-list>
+  </template>
+  <template v-else>
+    <p>Total Price: {{ totalPrice }}</p>
+    <pre>{{ order }}</pre>
+  </template>
 </template>
 
 <script setup lang="ts">
 import { computed, ComputedRef, Ref, ref, watch } from "vue"
-import { Products } from "./types"
+import { Order, OrderProduct, priceToText, Products } from "./types"
 import syodoAPI from "./syodo"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 import ProductList from "@/components/ProductList.vue"
@@ -79,4 +84,47 @@ syodoAPI.get<Products>("/products")
       errors.value.push("Хмм, не вдалося завантажити меню")
     })
     .finally(() => loaded.value = true)
+
+const order: Ref<Order> = ref(<Order>{
+  products: new Map<string, OrderProduct>(),
+})
+
+function updateOrder(product: OrderProduct) {
+  if (product.amount == 0) {
+    order.value.products.delete(product.id)
+  } else {
+    order.value.products.set(product.id, product)
+  }
+
+  if (order.value.products.size !== 0) {
+    tg.MainButton.setText("Переглянути замовлення")
+    tg.MainButton.show()
+  } else {
+    tg.MainButton.hide()
+  }
+}
+
+tg.MainButton.onClick(() => {
+  if (!checkout.value) {
+    checkout.value = true
+    tg.BackButton.show()
+    tg.MainButton.setText(`Замовити - ${ priceToText(totalPrice.value) }`)
+  } else {
+    alert("OK")
+  }
+})
+
+tg.BackButton.onClick(() => {
+  checkout.value = false
+  tg.BackButton.hide()
+  tg.MainButton.setText("Переглянути замовлення")
+})
+
+const checkout: Ref<boolean> = ref(false)
+
+const totalPrice: ComputedRef<number> = computed(() => {
+  let price = 0
+  order.value.products.forEach(p => price += Number(p.product.price))
+  return price
+})
 </script>

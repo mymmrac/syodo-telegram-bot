@@ -24,26 +24,39 @@
 </template>
 
 <script setup lang="ts">
-import { getImage, getPrice, Product } from "@/types"
+import { getImage, getPrice, OrderProduct, Product } from "@/types"
 import { Ref, ref } from "vue"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 
-defineProps<{
+const props = defineProps<{
   product: Product
+}>()
+
+const emit = defineEmits<{
+  (e: "productUpdate", product: OrderProduct): void
 }>()
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
 const amount: Ref<number> = ref(0)
 
-function add() {
+function update() {
   tg.HapticFeedback.selectionChanged()
+  emit("productUpdate", {
+    id: props.product.id,
+    amount: amount.value,
+    product: props.product,
+  })
+}
+
+function add() {
   amount.value++
+  update()
 }
 
 function remove() {
-  tg.HapticFeedback.selectionChanged()
   amount.value--
+  update()
 }
 </script>
 
