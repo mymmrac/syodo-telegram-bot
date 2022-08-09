@@ -5,7 +5,7 @@
       <div class="w-full px-2 pb-2 flex gap-2">
         <input type="text" placeholder="Пошук..." v-model.trim="search"
                class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text">
-        <button class="rounded px-2" @click="search = ''">
+        <button class="rounded px-2" @click="store.clearSearch">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                class="bi bi-backspace-fill" viewBox="0 0 16 16">
             <path
@@ -14,7 +14,7 @@
         </button>
       </div>
       <hr>
-      <product-list :objects="objects" :all-products="allProducts" :search="search" @productUpdate="updateOrder"/>
+      <product-list :objects="objects" :all-products="allProducts" @productUpdate="updateOrder"/>
       <go-to-top-button/>
     </div>
   </transition>
@@ -47,8 +47,8 @@ if (major < 6 || (major == 6 && minor < 1)) {
   sendError("old-version", tg.version)
 }
 
-const globalStore = useGlobalStore()
-const { loaded, allProducts } = storeToRefs(globalStore)
+const store = useGlobalStore()
+const { loaded, allProducts, search } = storeToRefs(store)
 
 // Loaders
 watch(loaded, (isLoaded) => {
@@ -61,8 +61,6 @@ watch(loaded, (isLoaded) => {
 })
 
 // Products
-const search: Ref<string> = ref("")
-
 const objects: ComputedRef<Objects> = computed(() => {
   let objs: Objects = allProducts.value
       .filter(p => p.category_id !== noLactoseCategory && !p.hidePosition)

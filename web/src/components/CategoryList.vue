@@ -16,6 +16,6 @@ import { storeToRefs } from "pinia"
 import { categories } from "@/definitions"
 import { useGlobalStore } from "@/store"
 
-const globalStore = useGlobalStore()
-const { selectedCategory } = storeToRefs(globalStore)
+const store = useGlobalStore()
+const { selectedCategory } = storeToRefs(store)
 </script>

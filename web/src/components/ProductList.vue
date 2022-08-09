@@ -1,7 +1,7 @@
 <template>
   <div class="p-2 grid grid-cols-2 gap-2">
     <transition name="m-fade">
-      <div v-show="selectedCategory === hasSubCategoriesCategory && search === ''"
+      <div v-show="selectedCategory === hasSubCategoriesCategory && store.isSearchEmpty"
            class="grid grid-cols-3 gap-2 col-span-2">
         <div v-for="subCategory in subCategories" :key="subCategory.id"
              @click="scrollToID(`sub-category-${subCategory.id}`)"
@@ -17,7 +17,7 @@
                        :product="object" :linked-product="linkedProduct(object)"
                        @productUpdate="e => $emit('productUpdate', e)"/>
         </template>
-        <div v-else-if="selectedCategory === hasSubCategoriesCategory && search === ''" class="rounded p-2 col-span-2"
+        <div v-else-if="selectedCategory === hasSubCategoriesCategory && store.isSearchEmpty" class="rounded p-2 col-span-2"
              :id="`sub-category-${object.id}`">
           <p class="border-b-2 border-tg-hint pt-2 pb-1 text-xl">{{ object.title }}</p>
         </div>
@@ -37,13 +37,12 @@ import { hasSubCategoriesCategory, subCategories } from "@/definitions"
 import { useGlobalStore } from "@/store"
 import { scrollToID } from "@/utils"
 
-const globalStore = useGlobalStore()
-const { selectedCategory } = storeToRefs(globalStore)
+const store = useGlobalStore()
+const { selectedCategory, search } = storeToRefs(store)
 
 const props = defineProps<{
   allProducts: Products
   objects: Objects
-  search: string
 }>()
 
 defineEmits<{
@@ -63,12 +62,12 @@ function match(product: Product): boolean {
     return false
   }
 
-  if (props.search === "") {
+  if (store.isSearchEmpty) {
     return true
   }
 
   const data = `${ product.title.toLowerCase() } ${ product.description.toLowerCase() }`
-  const searchWords = props.search.toLowerCase().split(" ")
+  const searchWords = search.value.toLowerCase().split(" ")
   for (const searchWord of searchWords) {
     let s = searchWord
     let p = true
