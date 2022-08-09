@@ -1,7 +1,7 @@
 <template>
   <div class="p-2 grid grid-cols-2 gap-2">
     <transition name="m-fade">
-      <div v-show="category === '7'" class="grid grid-cols-3 gap-2 col-span-2">
+      <div v-show="category === '7' && search === ''" class="grid grid-cols-3 gap-2 col-span-2">
         <div v-for="subCategory in subCategories" :key="subCategory.id"
              @click="goToID(`sub-category-${subCategory.id}`)"
              class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center">
@@ -16,7 +16,8 @@
                        :product="object" :linked-product="linkedProduct(object)"
                        @productUpdate="e => $emit('productUpdate', e)"></the-product>
         </template>
-        <div v-else-if="category === '7'" class="rounded p-2 col-span-2" :id="`sub-category-${object.id}`">
+        <div v-else-if="category === '7' && search === ''" class="rounded p-2 col-span-2"
+             :id="`sub-category-${object.id}`">
           <p class="border-b-2 border-tg-hint pt-2 pb-1 text-xl">{{ object.title }}</p>
         </div>
       </template>
