@@ -28,3 +28,7 @@ button, a, image, div {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+hr {
+  @apply border-tg-hint;
+}
