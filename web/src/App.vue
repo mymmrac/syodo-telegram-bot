@@ -15,7 +15,7 @@
         </button>
       </div>
       <hr>
-      <product-list :products="products" :all-products="allProducts" :category="selectedCategory" :search="search"
+      <product-list :objects="objects" :all-products="allProducts" :category="selectedCategory" :search="search"
                     @productUpdate="updateOrder"></product-list>
 
       <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { computed, ComputedRef, onMounted, Ref, ref, watch } from "vue"
-import { Order, OrderProduct, priceToText, Products } from "./types"
+import { isProduct, Objects, Order, OrderProduct, priceToText, Products } from "./types"
 import syodoAPI from "./syodo-api"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 import ProductList from "@/components/ProductList.vue"
@@ -68,8 +68,6 @@ watch(loaded, (isLoaded) => {
   }
 
   console.log("Loaded")
-  products.value.forEach(p => console.log(p.subcategory || "---"))
-
   tg.ready()
 })
 
@@ -92,8 +90,14 @@ function categorySelected(id: string) {
   selectedCategory.value = id
 }
 
-const products: ComputedRef<Products> = computed(() => {
-  return allProducts.value
+const insert = (arr: any[], index: number, newItem: any) => [
+  ...arr.slice(0, index),
+  newItem,
+  ...arr.slice(index),
+]
+
+const objects: ComputedRef<Objects> = computed(() => {
+  let objs: Objects = allProducts.value
       .filter(p => p.category_id !== "14" && !p.hidePosition)
       .sort((p1, p2) => {
         if (p1.subcategory && p2.subcategory) {
@@ -111,6 +115,22 @@ const products: ComputedRef<Products> = computed(() => {
 
         return 0
       })
+
+  subCategories.forEach(s => {
+    const i = objs.findIndex(o => {
+      if (!isProduct(o)) {
+        return false
+      }
+      return o.subcategory === s.title
+    })
+    if (i < 0) {
+      return
+    }
+
+    objs = insert(objs, i, s)
+  })
+
+  return objs
 })
 
 syodoAPI.get<Products>("/products")

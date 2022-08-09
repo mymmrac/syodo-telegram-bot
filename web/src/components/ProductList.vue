@@ -1,9 +1,25 @@
 <template>
   <div class="p-2 grid grid-cols-2 gap-2">
+    <transition name="m-fade">
+      <div v-show="category === '7'" class="grid grid-cols-3 gap-2 col-span-2">
+        <div v-for="subCategory in subCategories" :key="subCategory.id"
+             @click="goToID(`sub-category-${subCategory.id}`)"
+             class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center">
+          {{ subCategory.title }}
+        </div>
+      </div>
+    </transition>
     <transition-group name="m-fade">
-      <the-product v-for="product in products" :key="product.id" v-show="match(product)"
-                   :product="product" :linked-product="linkedProduct(product)"
-                   @productUpdate="e => $emit('productUpdate', e)"></the-product>
+      <template v-for="object in objects" :key="object.id">
+        <template v-if="isProduct(object)">
+          <the-product v-show="match(object)"
+                       :product="object" :linked-product="linkedProduct(object)"
+                       @productUpdate="e => $emit('productUpdate', e)"></the-product>
+        </template>
+        <div v-else-if="category === '7'" class="rounded p-2 col-span-2" :id="`sub-category-${object.id}`">
+          <p class="border-b-2 border-tg-hint pt-2 pb-1 text-xl">{{ object.title }}</p>
+        </div>
+      </template>
     </transition-group>
   </div>
   <div class="h-[96px]"></div>
@@ -11,11 +27,12 @@
 
 <script setup lang="ts">
 import TheProduct from "@/components/TheProduct.vue"
-import { OrderProduct, Product, Products } from "@/types"
+import { isProduct, Objects, OrderProduct, Product, Products } from "@/types"
+import { subCategories } from "@/definitions"
 
 const props = defineProps<{
   allProducts: Products
-  products: Products
+  objects: Objects
   category: string
   search: string
 }>()
@@ -23,6 +40,10 @@ const props = defineProps<{
 defineEmits<{
   (e: "productUpdate", product: OrderProduct): void
 }>()
+
+function goToID(id: string) {
+  document.getElementById(id)?.scrollIntoView()
+}
 
 function linkedProduct(product: Product): Product | undefined {
   if (!product.linkedPosition) {
