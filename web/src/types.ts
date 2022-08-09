@@ -45,7 +45,6 @@ export type SubCategory = {
 export type SubCategories = SubCategory[]
 
 export type OrderProduct = {
-    id: string
     amount: number
     product: Product
 }

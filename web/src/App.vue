@@ -14,7 +14,7 @@
         </button>
       </div>
       <hr>
-      <product-list @productUpdate="updateOrder"/>
+      <product-list/>
       <go-to-top-button/>
     </div>
   </transition>
@@ -33,7 +33,7 @@ import { TelegramWebApps } from "telegram-bots-webapps-types"
 import { computed, ComputedRef, Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
-import { Order, OrderProduct, priceToText, Products } from "@/types"
+import { priceToText, Products } from "@/types"
 import { scrollToTop, sendError } from "@/utils"
 import { useGlobalStore } from "@/store"
 import syodoAPI from "@/syodo-api"
@@ -47,7 +47,7 @@ if (major < 6 || (major == 6 && minor < 1)) {
 }
 
 const store = useGlobalStore()
-const { loaded, allProducts, search } = storeToRefs(store)
+const { loaded, allProducts, search, order } = storeToRefs(store)
 
 // Loaders
 watch(loaded, (isLoaded) => {
@@ -76,24 +76,14 @@ syodoAPI.get<Products>("/products")
     .finally(() => loaded.value = true)
 
 // Order
-const order: Ref<Order> = ref(<Order>{
-  products: new Map<string, OrderProduct>(),
-})
-
-function updateOrder(product: OrderProduct) {
-  if (product.amount == 0) {
-    order.value.products.delete(product.id)
-  } else {
-    order.value.products.set(product.id, product)
-  }
-
+watch(order, () => {
   if (order.value.products.size !== 0) {
     tg.MainButton.setText("Переглянути замовлення")
     tg.MainButton.show()
   } else {
     tg.MainButton.hide()
   }
-}
+}, { deep: true })
 
 tg.MainButton.onClick(() => {
   if (!checkout.value) {

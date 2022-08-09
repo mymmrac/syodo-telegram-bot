@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 
-import { isProduct, ProductListItems, Products } from "@/types"
+import { isProduct, Order, OrderProduct, ProductListItems, Products } from "@/types"
 import { categories, noLactoseCategory, subCategories } from "@/definitions"
 import { insert } from "@/utils"
 
@@ -9,6 +9,9 @@ export const useGlobalStore = defineStore("global", {
         loaded: false,
 
         allProducts: <Products>[],
+        order: <Order>{
+            products: new Map<string, OrderProduct>(),
+        },
 
         selectedCategory: categories[0].id,
         search: "",
@@ -59,5 +62,27 @@ export const useGlobalStore = defineStore("global", {
         clearSearch(): void {
             this.search = ""
         },
+
+        updateInOrder(orderProduct: OrderProduct): void {
+            if (orderProduct.amount === 0) {
+                this.removeFromOrder(orderProduct.product.id)
+                return
+            }
+
+            this.order.products.set(orderProduct.product.id, orderProduct)
+        },
+
+        removeFromOrder(id: string): void {
+            this.order.products.delete(id)
+        },
+
+        amountInOrder(id: string): number {
+            const orderProduct = this.order.products.get(id)
+            if (!orderProduct) {
+                return 0
+            }
+
+            return orderProduct.amount
+        }
     },
 })

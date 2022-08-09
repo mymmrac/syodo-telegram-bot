@@ -45,24 +45,20 @@ import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 import { computed, ComputedRef, Ref, ref, watch } from "vue"
 
-import { getImage, getPrice, OrderProduct, Product } from "@/types"
+import { getImage, getPrice, Product } from "@/types"
 import { noLactoseCategory } from "@/definitions"
+import { useGlobalStore } from "@/store"
 
 const props = defineProps<{
   product: Product
   linkedProduct: Product | undefined
 }>()
 
-const emit = defineEmits<{
-  (e: "productUpdate", product: OrderProduct): void
-}>()
+const store = useGlobalStore()
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
-const amount: Ref<number> = ref(0)
-const showDetails: Ref<boolean> = ref(false)
-const useLinkedProduct: Ref<boolean> = ref(false)
-
+const useLinkedProduct: Ref<boolean> = ref(false) // TODO: Compute
 const usedProduct: ComputedRef<Product> = computed(() => {
   if (!props.linkedProduct) {
     return props.product
@@ -70,12 +66,14 @@ const usedProduct: ComputedRef<Product> = computed(() => {
   return useLinkedProduct.value ? props.linkedProduct : props.product
 })
 
+const amount: Ref<number> = ref(store.amountInOrder(usedProduct.value.id))
+const showDetails: Ref<boolean> = ref(false)
+
 function update() {
   tg.HapticFeedback.selectionChanged()
 
   if (!props.linkedProduct) {
-    emit("productUpdate", {
-      id: props.product.id,
+    store.updateInOrder({
       amount: amount.value,
       product: props.product,
     })
@@ -83,27 +81,17 @@ function update() {
   }
 
   if (useLinkedProduct.value) {
-    emit("productUpdate", {
-      id: props.linkedProduct.id,
+    store.updateInOrder({
       amount: amount.value,
       product: props.linkedProduct,
     })
-    emit("productUpdate", {
-      id: props.product.id,
-      amount: 0,
-      product: props.product,
-    })
+    store.removeFromOrder(props.product.id)
   } else {
-    emit("productUpdate", {
-      id: props.product.id,
+    store.updateInOrder({
       amount: amount.value,
       product: props.product,
     })
-    emit("productUpdate", {
-      id: props.linkedProduct.id,
-      amount: 0,
-      product: props.linkedProduct,
-    })
+    store.removeFromOrder(props.linkedProduct.id)
   }
 }
 

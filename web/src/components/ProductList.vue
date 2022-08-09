@@ -13,9 +13,7 @@
     <transition-group name="m-fade">
       <template v-for="item in store.items" :key="item.id">
         <template v-if="isProduct(item)">
-          <the-product v-show="match(item)"
-                       :product="item" :linked-product="linkedProduct(item)"
-                       @productUpdate="e => $emit('productUpdate', e)"/>
+          <the-product v-show="match(item)" :product="item" :linked-product="linkedProduct(item)"/>
         </template>
         <div v-else-if="selectedCategory === hasSubCategoriesCategory && store.isSearchEmpty"
              class="rounded p-2 col-span-2" :id="`sub-category-${item.id}`">
@@ -33,16 +31,12 @@ import TheProduct from "@/components/TheProduct.vue"
 import { storeToRefs } from "pinia"
 
 import { hasSubCategoriesCategory, subCategories } from "@/definitions"
-import { isProduct, OrderProduct, Product } from "@/types"
+import { isProduct, Product } from "@/types"
 import { useGlobalStore } from "@/store"
 import { scrollToID } from "@/utils"
 
 const store = useGlobalStore()
 const { selectedCategory, search, allProducts } = storeToRefs(store)
-
-defineEmits<{
-  (e: "productUpdate", product: OrderProduct): void
-}>()
 
 function linkedProduct(product: Product): Product | undefined {
   if (!product.linkedPosition) {
