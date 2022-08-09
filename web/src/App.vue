@@ -14,7 +14,7 @@
         </button>
       </div>
       <hr>
-      <product-list :objects="objects" :all-products="allProducts" @productUpdate="updateOrder"/>
+      <product-list @productUpdate="updateOrder"/>
       <go-to-top-button/>
     </div>
   </transition>
@@ -33,9 +33,8 @@ import { TelegramWebApps } from "telegram-bots-webapps-types"
 import { computed, ComputedRef, Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
-import { isProduct, Objects, Order, OrderProduct, priceToText, Products } from "@/types"
-import { noLactoseCategory, subCategories } from "@/definitions"
-import { insert, scrollToTop, sendError } from "@/utils"
+import { Order, OrderProduct, priceToText, Products } from "@/types"
+import { scrollToTop, sendError } from "@/utils"
 import { useGlobalStore } from "@/store"
 import syodoAPI from "@/syodo-api"
 
@@ -61,43 +60,6 @@ watch(loaded, (isLoaded) => {
 })
 
 // Products
-const objects: ComputedRef<Objects> = computed(() => {
-  let objs: Objects = allProducts.value
-      .filter(p => p.category_id !== noLactoseCategory && !p.hidePosition)
-      .sort((p1, p2) => {
-        if (p1.subcategory && p2.subcategory) {
-          const s1 = subCategories.find(s => s.title === p1.subcategory)
-          const s2 = subCategories.find(s => s.title === p2.subcategory)
-
-          if (s1 && s2) {
-            return s1.id - s2.id
-          }
-        } else if (p1.subcategory) {
-          return 1
-        } else if (p2.subcategory) {
-          return -1
-        }
-
-        return 0
-      })
-
-  subCategories.forEach(s => {
-    const i = objs.findIndex(o => {
-      if (!isProduct(o)) {
-        return false
-      }
-      return o.subcategory === s.title
-    })
-    if (i < 0) {
-      return
-    }
-
-    objs = insert(objs, i, s)
-  })
-
-  return objs
-})
-
 syodoAPI.get<Products>("/products")
     .then(response => {
       if (response.status !== 200) {
@@ -113,6 +75,7 @@ syodoAPI.get<Products>("/products")
     })
     .finally(() => loaded.value = true)
 
+// Order
 const order: Ref<Order> = ref(<Order>{
   products: new Map<string, OrderProduct>(),
 })
@@ -152,6 +115,7 @@ tg.BackButton.onClick(() => {
   tg.MainButton.setText("Переглянути замовлення")
 })
 
+// Checkout
 const checkout: Ref<boolean> = ref(false)
 
 const totalPrice: ComputedRef<number> = computed(() => {

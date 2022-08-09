@@ -54,8 +54,9 @@ export type Order = {
     products: Map<string, OrderProduct>
 }
 
-export type Objects = (Product | SubCategory)[]
+export type ProductListItem = Product | SubCategory
+export type ProductListItems = ProductListItem[]
 
-export function isProduct(object: Product | SubCategory): object is Product {
-    return (<Product>object).price !== undefined
+export function isProduct(item: ProductListItem): item is Product {
+    return (<Product>item).price !== undefined
 }
