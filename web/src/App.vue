@@ -42,7 +42,7 @@ import syodoAPI from "./syodo-api"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 import ProductList from "@/components/ProductList.vue"
 import CategoryList from "@/components/CategoryList.vue"
-import { categories } from "@/definitions"
+import { categories, subCategories } from "@/definitions"
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
@@ -68,6 +68,8 @@ watch(loaded, (isLoaded) => {
   }
 
   console.log("Loaded")
+  products.value.forEach(p => console.log(p.subcategory || "---"))
+
   tg.ready()
 })
 
@@ -91,7 +93,24 @@ function categorySelected(id: string) {
 }
 
 const products: ComputedRef<Products> = computed(() => {
-  return allProducts.value.filter(p => p.category_id !== "14")
+  return allProducts.value
+      .filter(p => p.category_id !== "14" && !p.hidePosition)
+      .sort((p1, p2) => {
+        if (p1.subcategory && p2.subcategory) {
+          const s1 = subCategories.find(s => s.title === p1.subcategory)
+          const s2 = subCategories.find(s => s.title === p2.subcategory)
+
+          if (s1 && s2) {
+            return s1.id - s2.id
+          }
+        } else if (p1.subcategory) {
+          return 1
+        } else if (p2.subcategory) {
+          return -1
+        }
+
+        return 0
+      })
 })
 
 syodoAPI.get<Products>("/products")

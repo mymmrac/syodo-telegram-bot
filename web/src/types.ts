@@ -12,6 +12,7 @@ export type Product = {
     showOnMain: boolean
     description: string
     linkedPosition: string
+    hidePosition: boolean
 }
 
 export type Products = Product[]
