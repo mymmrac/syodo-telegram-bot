@@ -3,7 +3,7 @@
     <div v-for="orderProduct in order.products.values()" :key="orderProduct.product.id"
          class="flex justify-between items-center">
       <p>{{ orderProduct.product.title }}</p>
-      <add-remove-buttons :amount="orderProduct.amount" :add="() => add(orderProduct)"
+      <add-remove-buttons class="w-1/3" :amount="orderProduct.amount" :add="() => add(orderProduct)"
                           :remove="() => remove(orderProduct)"/>
     </div>
   </div>

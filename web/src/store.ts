@@ -56,6 +56,14 @@ export const useGlobalStore = defineStore("global", {
 
             return items
         },
+
+        totalOrderPrice: (state): number => {
+            let price = 0
+            state.order.products.forEach(p => price += Number(p.product.price) * p.amount)
+            return price
+        },
+
+        isOrderEmpty: (state): boolean => state.order.products.size === 0,
     },
 
     actions: {

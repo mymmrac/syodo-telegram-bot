@@ -30,7 +30,7 @@ import Checkout from "@/components/Checkout.vue"
 import GoToTopButton from "@/components/GoToTopButton.vue"
 
 import { TelegramWebApps } from "telegram-bots-webapps-types"
-import { computed, ComputedRef, Ref, ref, watch } from "vue"
+import { Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
 import { priceToText, Products } from "@/types"
@@ -77,7 +77,19 @@ syodoAPI.get<Products>("/products")
 
 // Order
 watch(order, () => {
-  if (order.value.products.size !== 0) {
+  if (checkout.value) {
+    if (store.isOrderEmpty) {
+      checkout.value = false
+      tg.MainButton.hide()
+      tg.BackButton.hide()
+      return
+    }
+
+    tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
+    return
+  }
+
+  if (!store.isOrderEmpty) {
     tg.MainButton.setText("Переглянути замовлення")
     tg.MainButton.show()
   } else {
@@ -91,7 +103,7 @@ tg.MainButton.onClick(() => {
     scrollToTop()
 
     tg.BackButton.show()
-    tg.MainButton.setText(`Замовити - ${ priceToText(totalPrice.value) }`)
+    tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
   } else {
     alert("OK")
   }
@@ -107,12 +119,6 @@ tg.BackButton.onClick(() => {
 
 // Checkout
 const checkout: Ref<boolean> = ref(false)
-
-const totalPrice: ComputedRef<number> = computed(() => {
-  let price = 0
-  order.value.products.forEach(p => price += Number(p.product.price) * p.amount)
-  return price
-})
 </script>
 
 <style scoped lang="scss">
