@@ -156,7 +156,7 @@ const checkout: Ref<boolean> = ref(false)
 
 const totalPrice: ComputedRef<number> = computed(() => {
   let price = 0
-  order.value.products.forEach(p => price += Number(p.product.price))
+  order.value.products.forEach(p => price += Number(p.product.price) * p.amount)
   return price
 })
 </script>
