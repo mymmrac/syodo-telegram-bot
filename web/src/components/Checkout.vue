@@ -3,15 +3,34 @@
     <div v-for="orderProduct in order.products.values()" :key="orderProduct.product.id"
          class="flex justify-between items-center">
       <p>{{ orderProduct.product.title }}</p>
-      <p>{{ orderProduct.amount }}</p>
+      <add-remove-buttons :amount="orderProduct.amount" :add="() => add(orderProduct)"
+                          :remove="() => remove(orderProduct)"/>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Order } from "@/types"
+import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
 
-defineProps<{
-  order: Order
-}>()
+import { storeToRefs } from "pinia"
+
+import { useGlobalStore } from "@/store"
+import { OrderProduct } from "@/types"
+
+const store = useGlobalStore()
+const { order } = storeToRefs(store)
+
+function add(orderProduct: OrderProduct) {
+  store.updateInOrder({
+    amount: orderProduct.amount + 1,
+    product: orderProduct.product,
+  })
+}
+
+function remove(orderProduct: OrderProduct) {
+  store.updateInOrder({
+    amount: orderProduct.amount - 1,
+    product: orderProduct.product,
+  })
+}
 </script>

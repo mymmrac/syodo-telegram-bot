@@ -42,8 +42,8 @@
 <script setup lang="ts">
 import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
 
-import { TelegramWebApps } from "telegram-bots-webapps-types"
 import { computed, ComputedRef, Ref, ref, watch } from "vue"
+import { storeToRefs } from "pinia"
 
 import { getImage, getPrice, Product } from "@/types"
 import { noLactoseCategory } from "@/definitions"
@@ -55,10 +55,9 @@ const props = defineProps<{
 }>()
 
 const store = useGlobalStore()
+const { order } = storeToRefs(store)
 
-const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
-
-const useLinkedProduct: Ref<boolean> = ref(false) // TODO: Compute
+const useLinkedProduct: Ref<boolean> = ref(store.isUsedLinkedInOrder(props.product))
 const usedProduct: ComputedRef<Product> = computed(() => {
   if (!props.linkedProduct) {
     return props.product
@@ -67,11 +66,13 @@ const usedProduct: ComputedRef<Product> = computed(() => {
 })
 
 const amount: Ref<number> = ref(store.amountInOrder(usedProduct.value.id))
+watch(order, () => {
+  amount.value = store.amountInOrder(usedProduct.value.id)
+}, { deep: true })
+
 const showDetails: Ref<boolean> = ref(false)
 
 function update() {
-  tg.HapticFeedback.selectionChanged()
-
   if (!props.linkedProduct) {
     store.updateInOrder({
       amount: amount.value,

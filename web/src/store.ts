@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 
-import { isProduct, Order, OrderProduct, ProductListItems, Products } from "@/types"
+import { isProduct, Order, OrderProduct, Product, ProductListItems, Products } from "@/types"
 import { categories, noLactoseCategory, subCategories } from "@/definitions"
 import { insert } from "@/utils"
 
@@ -64,7 +64,7 @@ export const useGlobalStore = defineStore("global", {
         },
 
         updateInOrder(orderProduct: OrderProduct): void {
-            if (orderProduct.amount === 0) {
+            if (orderProduct.amount <= 0) {
                 this.removeFromOrder(orderProduct.product.id)
                 return
             }
@@ -83,6 +83,14 @@ export const useGlobalStore = defineStore("global", {
             }
 
             return orderProduct.amount
-        }
+        },
+
+        isUsedLinkedInOrder(product: Product): boolean {
+            if (!product.linkedPosition) {
+                return false
+            }
+
+            return this.order.products.has(product.linkedPosition)
+        },
     },
 })
