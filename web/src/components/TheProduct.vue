@@ -25,7 +25,7 @@
           </div>
           <hr>
           <p class="">{{ product.description }}</p>
-          <div v-if="linkedProduct && linkedProduct.category_id === '14'" class="mt-2">
+          <div v-if="linkedProduct && linkedProduct.category_id === noLactoseCategory" class="mt-2">
             <button class="w-full m-btn" :class="useLinkedProduct ? '' : 'bg-tg-hint'"
                     @click="useLinkedProduct = !useLinkedProduct">
               Без лактози
@@ -40,10 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import { getImage, getPrice, OrderProduct, Product } from "@/types"
-import { computed, ComputedRef, Ref, ref, watch } from "vue"
-import { TelegramWebApps } from "telegram-bots-webapps-types"
 import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
+
+import { TelegramWebApps } from "telegram-bots-webapps-types"
+import { computed, ComputedRef, Ref, ref, watch } from "vue"
+
+import { getImage, getPrice, OrderProduct, Product } from "@/types"
+import { noLactoseCategory } from "@/definitions"
 
 const props = defineProps<{
   product: Product

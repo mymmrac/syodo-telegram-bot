@@ -1,7 +1,8 @@
 <template>
   <div class="p-2 grid grid-cols-2 gap-2">
     <transition name="m-fade">
-      <div v-show="category === '7' && search === ''" class="grid grid-cols-3 gap-2 col-span-2">
+      <div v-show="selectedCategory === hasSubCategoriesCategory && search === ''"
+           class="grid grid-cols-3 gap-2 col-span-2">
         <div v-for="subCategory in subCategories" :key="subCategory.id"
              @click="scrollToID(`sub-category-${subCategory.id}`)"
              class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center">
@@ -16,7 +17,7 @@
                        :product="object" :linked-product="linkedProduct(object)"
                        @productUpdate="e => $emit('productUpdate', e)"/>
         </template>
-        <div v-else-if="category === '7' && search === ''" class="rounded p-2 col-span-2"
+        <div v-else-if="selectedCategory === hasSubCategoriesCategory && search === ''" class="rounded p-2 col-span-2"
              :id="`sub-category-${object.id}`">
           <p class="border-b-2 border-tg-hint pt-2 pb-1 text-xl">{{ object.title }}</p>
         </div>
@@ -28,14 +29,20 @@
 
 <script setup lang="ts">
 import TheProduct from "@/components/TheProduct.vue"
+
+import { storeToRefs } from "pinia"
+
 import { isProduct, Objects, OrderProduct, Product, Products } from "@/types"
-import { subCategories } from "@/definitions"
+import { hasSubCategoriesCategory, subCategories } from "@/definitions"
+import { useGlobalStore } from "@/store"
 import { scrollToID } from "@/utils"
+
+const globalStore = useGlobalStore()
+const { selectedCategory } = storeToRefs(globalStore)
 
 const props = defineProps<{
   allProducts: Products
   objects: Objects
-  category: string
   search: string
 }>()
 
@@ -52,7 +59,7 @@ function linkedProduct(product: Product): Product | undefined {
 }
 
 function match(product: Product): boolean {
-  if (product.category_id !== props.category) {
+  if (product.category_id !== selectedCategory.value) {
     return false
   }
 

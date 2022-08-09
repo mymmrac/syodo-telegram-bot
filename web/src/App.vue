@@ -1,8 +1,7 @@
 <template>
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
-      <category-list :categories="categories" :selected-category="selectedCategory"
-                     @categorySelected="categorySelected"/>
+      <category-list/>
       <div class="w-full px-2 pb-2 flex gap-2">
         <input type="text" placeholder="Пошук..." v-model.trim="search"
                class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text">
@@ -15,9 +14,7 @@
         </button>
       </div>
       <hr>
-      <product-list :objects="objects" :all-products="allProducts" :category="selectedCategory" :search="search"
-                    @productUpdate="updateOrder"/>
-
+      <product-list :objects="objects" :all-products="allProducts" :search="search" @productUpdate="updateOrder"/>
       <go-to-top-button/>
     </div>
   </transition>
@@ -32,12 +29,12 @@ import CategoryList from "@/components/CategoryList.vue"
 import Checkout from "@/components/Checkout.vue"
 import GoToTopButton from "@/components/GoToTopButton.vue"
 
-import { computed, ComputedRef, Ref, ref, watch } from "vue"
 import { TelegramWebApps } from "telegram-bots-webapps-types"
+import { computed, ComputedRef, Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
 import { isProduct, Objects, Order, OrderProduct, priceToText, Products } from "@/types"
-import { categories, subCategories } from "@/definitions"
+import { noLactoseCategory, subCategories } from "@/definitions"
 import { insert, scrollToTop, sendError } from "@/utils"
 import { useGlobalStore } from "@/store"
 import syodoAPI from "@/syodo-api"
@@ -64,17 +61,11 @@ watch(loaded, (isLoaded) => {
 })
 
 // Products
-const selectedCategory: Ref<string> = ref(categories[0].id)
-
 const search: Ref<string> = ref("")
-
-function categorySelected(id: string) {
-  selectedCategory.value = id
-}
 
 const objects: ComputedRef<Objects> = computed(() => {
   let objs: Objects = allProducts.value
-      .filter(p => p.category_id !== "14" && !p.hidePosition)
+      .filter(p => p.category_id !== noLactoseCategory && !p.hidePosition)
       .sort((p1, p2) => {
         if (p1.subcategory && p2.subcategory) {
           const s1 = subCategories.find(s => s.title === p1.subcategory)

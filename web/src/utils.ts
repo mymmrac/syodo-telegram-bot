@@ -19,3 +19,7 @@ export function sendError(type: string, data: any) {
     tg.HapticFeedback.notificationOccurred("error")
     tg.sendData(`${ type }:${ data }`)
 }
+
+export function href(path: string): string {
+    return new URL(import.meta.env.BASE_URL + path, import.meta.url).href
+}
