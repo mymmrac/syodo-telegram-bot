@@ -28,10 +28,7 @@
     </div>
   </transition>
   <transition name="m-fade" mode="in-out">
-    <div v-show="checkout">
-      <p>Total Price: {{ totalPrice }}</p>
-      <pre>{{ order }}</pre>
-    </div>
+    <checkout v-show="checkout" :order="order"></checkout>
   </transition>
 </template>
 
@@ -43,6 +40,7 @@ import { TelegramWebApps } from "telegram-bots-webapps-types"
 import ProductList from "@/components/ProductList.vue"
 import CategoryList from "@/components/CategoryList.vue"
 import { categories, subCategories } from "@/definitions"
+import Checkout from "@/components/Checkout.vue"
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
