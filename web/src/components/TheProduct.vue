@@ -30,6 +30,7 @@ import { TelegramWebApps } from "telegram-bots-webapps-types"
 
 const props = defineProps<{
   product: Product
+  linkedProduct: Product | undefined
 }>()
 
 const emit = defineEmits<{

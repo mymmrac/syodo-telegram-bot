@@ -2,7 +2,8 @@
   <div class="p-2 grid grid-cols-2 gap-2">
     <transition-group name="m-fade">
       <the-product v-for="product in products" :key="product.id" v-show="match(product)"
-                   :product="product" @productUpdate="e => $emit('productUpdate', e)"></the-product>
+                   :product="product" :linked-product="linkedProduct(product)"
+                   @productUpdate="e => $emit('productUpdate', e)"></the-product>
     </transition-group>
   </div>
   <div class="h-[96px]"></div>
@@ -13,6 +14,7 @@ import TheProduct from "@/components/TheProduct.vue"
 import { OrderProduct, Product, Products } from "@/types"
 
 const props = defineProps<{
+  allProducts: Products
   products: Products
   category: string
   search: string
@@ -21,6 +23,14 @@ const props = defineProps<{
 defineEmits<{
   (e: "productUpdate", product: OrderProduct): void
 }>()
+
+function linkedProduct(product: Product): Product | undefined {
+  if (!product.linkedPosition) {
+    return undefined
+  }
+
+  return props.allProducts.find(p => p.id == product.linkedPosition)
+}
 
 function match(product: Product): boolean {
   if (product.category_id !== props.category) {

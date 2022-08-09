@@ -15,7 +15,7 @@
         </button>
       </div>
       <hr class="border-tg-hint">
-      <product-list :products="products" :category="selectedCategory" :search="search"
+      <product-list :products="products" :all-products="allProducts" :category="selectedCategory" :search="search"
                     @productUpdate="updateOrder"></product-list>
 
       <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"

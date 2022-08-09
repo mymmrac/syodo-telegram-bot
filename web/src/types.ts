@@ -11,6 +11,7 @@ export type Product = {
     title: string
     showOnMain: boolean
     description: string
+    linkedPosition: string
 }
 
 export type Products = Product[]
