@@ -3,7 +3,7 @@
     <transition name="m-fade">
       <div v-show="category === '7' && search === ''" class="grid grid-cols-3 gap-2 col-span-2">
         <div v-for="subCategory in subCategories" :key="subCategory.id"
-             @click="goToID(`sub-category-${subCategory.id}`)"
+             @click="scrollToID(`sub-category-${subCategory.id}`)"
              class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center">
           {{ subCategory.title }}
         </div>
@@ -14,7 +14,7 @@
         <template v-if="isProduct(object)">
           <the-product v-show="match(object)"
                        :product="object" :linked-product="linkedProduct(object)"
-                       @productUpdate="e => $emit('productUpdate', e)"></the-product>
+                       @productUpdate="e => $emit('productUpdate', e)"/>
         </template>
         <div v-else-if="category === '7' && search === ''" class="rounded p-2 col-span-2"
              :id="`sub-category-${object.id}`">
@@ -30,6 +30,7 @@
 import TheProduct from "@/components/TheProduct.vue"
 import { isProduct, Objects, OrderProduct, Product, Products } from "@/types"
 import { subCategories } from "@/definitions"
+import { scrollToID } from "@/utils"
 
 const props = defineProps<{
   allProducts: Products
@@ -41,10 +42,6 @@ const props = defineProps<{
 defineEmits<{
   (e: "productUpdate", product: OrderProduct): void
 }>()
-
-function goToID(id: string) {
-  document.getElementById(id)?.scrollIntoView()
-}
 
 function linkedProduct(product: Product): Product | undefined {
   if (!product.linkedPosition) {

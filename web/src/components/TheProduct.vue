@@ -9,7 +9,7 @@
         <p>{{ product.weight }}</p>
         <p>{{ getPrice(usedProduct) }}</p>
       </div>
-      <add-remove-buttons :amount="amount" :add="add" :remove="remove"></add-remove-buttons>
+      <add-remove-buttons :amount="amount" :add="add" :remove="remove"/>
     </div>
     <transition name="m-card-fade">
       <div v-if="showDetails" class="z-50 fixed top-0 bottom-0 left-0 right-0 overflow-y-scroll bg-gray-500/75 p-8"
@@ -31,7 +31,7 @@
               Без лактози
             </button>
           </div>
-          <add-remove-buttons :amount="amount" :add="add" :remove="remove"></add-remove-buttons>
+          <add-remove-buttons :amount="amount" :add="add" :remove="remove"/>
           <button class="w-full m-btn mt-2" @click="showDetails = false">Закрити</button>
         </div>
       </div>

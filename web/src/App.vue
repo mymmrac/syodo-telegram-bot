@@ -2,7 +2,7 @@
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
       <category-list :categories="categories" :selected-category="selectedCategory"
-                     @categorySelected="categorySelected"></category-list>
+                     @categorySelected="categorySelected"/>
       <div class="w-full px-2 pb-2 flex gap-2">
         <input type="text" placeholder="Пошук..." v-model.trim="search"
                class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text">
@@ -16,15 +16,9 @@
       </div>
       <hr>
       <product-list :objects="objects" :all-products="allProducts" :category="selectedCategory" :search="search"
-                    @productUpdate="updateOrder"></product-list>
+                    @productUpdate="updateOrder"/>
 
-      <button :class="scrollPos < 256 ? 'hidden' : ''" @click="scrollToTop('smooth')"
-              class="fixed z-20 bottom-8 right-2 text-tg-button rounded-full bg-tg-button-text shadow-xl">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-          <path
-              d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0zm-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
-        </svg>
-      </button>
+      <go-to-top-button/>
     </div>
   </transition>
   <transition name="m-fade" mode="in-out">
@@ -33,23 +27,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ComputedRef, onMounted, Ref, ref, watch } from "vue"
-import { isProduct, Objects, Order, OrderProduct, priceToText, Products } from "./types"
-import syodoAPI from "./syodo-api"
-import { TelegramWebApps } from "telegram-bots-webapps-types"
 import ProductList from "@/components/ProductList.vue"
 import CategoryList from "@/components/CategoryList.vue"
-import { categories, subCategories } from "@/definitions"
 import Checkout from "@/components/Checkout.vue"
+import GoToTopButton from "@/components/GoToTopButton.vue"
+
+import { computed, ComputedRef, Ref, ref, watch } from "vue"
+import { TelegramWebApps } from "telegram-bots-webapps-types"
+import { storeToRefs } from "pinia"
+
+import { isProduct, Objects, Order, OrderProduct, priceToText, Products } from "@/types"
+import { categories, subCategories } from "@/definitions"
+import { insert, scrollToTop, sendError } from "@/utils"
+import { useGlobalStore } from "@/store"
+import syodoAPI from "@/syodo-api"
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
-
-// Errors
-function sendError(type: string, data: any) {
-  console.error(`Error type:${ type }, data: ${ data }`)
-  tg.HapticFeedback.notificationOccurred("error")
-  tg.sendData(`${ type }:${ data }`)
-}
 
 // Version check
 const [ major, minor ] = tg.version.split(".").map(Number)
@@ -57,9 +50,10 @@ if (major < 6 || (major == 6 && minor < 1)) {
   sendError("old-version", tg.version)
 }
 
-// Loaders
-const loaded: Ref<boolean> = ref(false)
+const globalStore = useGlobalStore()
+const { loaded, allProducts } = storeToRefs(globalStore)
 
+// Loaders
 watch(loaded, (isLoaded) => {
   if (!isLoaded) {
     return
@@ -69,17 +63,7 @@ watch(loaded, (isLoaded) => {
   tg.ready()
 })
 
-const scrollPos: Ref<number> = ref(window.scrollY)
-
-onMounted(() => {
-  window.addEventListener("scroll", () => {
-    scrollPos.value = window.scrollY
-  })
-})
-
 // Products
-const allProducts: Ref<Products> = ref([])
-
 const selectedCategory: Ref<string> = ref(categories[0].id)
 
 const search: Ref<string> = ref("")
@@ -87,12 +71,6 @@ const search: Ref<string> = ref("")
 function categorySelected(id: string) {
   selectedCategory.value = id
 }
-
-const insert = (arr: any[], index: number, newItem: any) => [
-  ...arr.slice(0, index),
-  newItem,
-  ...arr.slice(index),
-]
 
 const objects: ComputedRef<Objects> = computed(() => {
   let objs: Objects = allProducts.value
@@ -163,10 +141,6 @@ function updateOrder(product: OrderProduct) {
   } else {
     tg.MainButton.hide()
   }
-}
-
-function scrollToTop(behavior: ScrollBehavior = "auto") {
-  window.scrollTo({ top: 0, behavior: behavior })
 }
 
 tg.MainButton.onClick(() => {
