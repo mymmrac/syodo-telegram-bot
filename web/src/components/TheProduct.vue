@@ -21,7 +21,7 @@
       </transition-group>
     </div>
     <transition name="m-card-fade">
-      <div v-if="showDetails" class="z-50 fixed top-0 bottom-0 left-0 right-0 bg-gray-500/75 p-8"
+      <div v-if="showDetails" class="z-50 fixed top-0 bottom-0 left-0 right-0 overflow-y-scroll bg-gray-500/75 p-8"
            @click="showDetails = false">
         <div class="bg-tg-bg rounded p-2 m-card" @click.stop>
           <div class="aspect-square rounded bg-white grid place-content-center">
