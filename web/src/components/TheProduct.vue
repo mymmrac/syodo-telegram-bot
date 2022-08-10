@@ -25,8 +25,9 @@
           </div>
           <hr>
           <p class="">{{ product.description }}</p>
-          <div v-if="linkedProduct && linkedProduct.category_id === noLactoseCategory" class="mt-2">
-            <button class="w-full m-btn" :class="useLinkedProduct ? '' : 'bg-tg-hint'"
+          <div v-if="linkedProduct && linkedProduct.category_id === noLactoseCategory" class="mt-2 box-border">
+            <button class="w-full m-btn-no-padding"
+                    :class="useLinkedProduct ? 'py-1' : 'h-[32px] text-tg-text bg-tg-bg border-2 border-tg-button'"
                     @click="useLinkedProduct = !useLinkedProduct">
               Без лактози
             </button>
@@ -114,6 +115,10 @@ function remove() {
 <style scoped lang="scss">
 .m-btn {
   @apply py-1 px-2 rounded shadow;
+}
+
+.m-btn-no-padding {
+  @apply px-2 rounded shadow;
 }
 
 .m-card-fade {
