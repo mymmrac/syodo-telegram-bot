@@ -100,5 +100,13 @@ export const useGlobalStore = defineStore("global", {
 
             return this.order.products.has(product.linkedPosition)
         },
+
+        linkedFromProduct(product: Product): Product | undefined {
+            if (product.linkedPosition) {
+                return undefined
+            }
+
+            return this.allProducts.find(p => p.linkedPosition === product.id)
+        },
     },
 })

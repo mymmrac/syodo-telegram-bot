@@ -35,7 +35,7 @@ function removeInternal(payload: MouseEvent): void {
 
 <style scoped lang="scss">
 .m-btn {
-  @apply py-1 px-2 rounded;
+  @apply py-1 px-2 rounded shadow;
 }
 
 .m-buttons-fade {
