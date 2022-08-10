@@ -22,7 +22,6 @@
       </template>
     </transition-group>
   </div>
-  <div class="h-[96px]"></div>
 </template>
 
 <script setup lang="ts">

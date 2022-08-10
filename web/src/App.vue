@@ -15,12 +15,15 @@
       </div>
       <hr>
       <product-list/>
-      <go-to-top-button/>
     </div>
   </transition>
+
   <transition name="m-fade" mode="in-out">
     <checkout v-show="checkout" :order="order"></checkout>
   </transition>
+
+  <div class="h-[96px]"></div>
+  <go-to-top-button/>
 </template>
 
 <script setup lang="ts">
