@@ -4,8 +4,8 @@
       <category-list/>
       <div class="w-full px-2 pb-2 flex gap-2">
         <input type="text" placeholder="Пошук..." v-model.trim="search"
-               class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text">
-        <button class="rounded px-2" @click="store.clearSearch">
+               class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text shadow">
+        <button class="rounded px-2 shadow" @click="store.clearSearch">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                class="bi bi-backspace-fill" viewBox="0 0 16 16">
             <path

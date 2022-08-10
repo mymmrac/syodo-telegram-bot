@@ -5,7 +5,7 @@
            class="grid grid-cols-3 gap-2 col-span-2">
         <div v-for="subCategory in subCategories" :key="subCategory.id"
              @click="scrollToID(`sub-category-${subCategory.id}`)"
-             class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center">
+             class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center shadow">
           {{ subCategory.title }}
         </div>
       </div>
