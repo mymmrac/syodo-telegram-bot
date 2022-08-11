@@ -33,7 +33,7 @@ import Checkout from "@/components/Checkout.vue"
 import GoToTopButton from "@/components/GoToTopButton.vue"
 
 import { TelegramWebApps } from "telegram-bots-webapps-types"
-import { Ref, ref, watch } from "vue"
+import { onMounted, Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
 import { priceToText, Products } from "@/types"
@@ -48,6 +48,16 @@ const [ major, minor ] = tg.version.split(".").map(Number)
 if (major < 6 || (major == 6 && minor < 1)) {
   sendError("old-version", tg.version)
 }
+
+// Color scheme
+function updateColorScheme() {
+  document.documentElement.className = tg.colorScheme
+}
+
+tg.onEvent("themeChanged", updateColorScheme)
+onMounted(() => {
+  updateColorScheme()
+})
 
 const store = useGlobalStore()
 const { loaded, allProducts, search, order } = storeToRefs(store)
