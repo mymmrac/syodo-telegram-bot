@@ -28,14 +28,3 @@ button, a, image, div {
 hr {
   @apply border-tg-hint;
 }
-
-@media (pointer: coarse), (hover: none) {
-  [title] {
-    @apply relative inline-flex justify-center;
-  }
-
-  [title]:focus::after {
-    @apply text-tg-text bg-tg-bg rounded shadow p-2 absolute w-fit top-[90%];
-    content: attr(title);
-  }
-}

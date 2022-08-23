@@ -6,7 +6,7 @@
           <img :src="getImage(originalProduct(orderProduct.product))" :alt="orderProduct.product.title"
                class="rounded">
         </div>
-        <p class="flex-1 truncate" :title="orderProduct.product.title">{{ orderProduct.product.title }}</p>
+        <div class="flex-1 truncate" :title="orderProduct.product.title">{{ orderProduct.product.title }}</div>
         <add-remove-buttons class="w-24 mt-0" :amount="orderProduct.amount" :add="() => add(orderProduct)"
                             :remove="() => remove(orderProduct)"/>
       </div>
