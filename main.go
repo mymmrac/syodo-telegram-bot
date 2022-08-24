@@ -82,10 +82,22 @@ func start(cfg *config.Config, log *logger.Log) {
 		srv = &fasthttp.Server{}
 		srv.Handler = rtr.Handler
 
+		err = bot.DeleteWebhook(&telego.DeleteWebhookParams{})
+		if err != nil {
+			log.Fatalf("Delete webhook: %s", err)
+		}
+
 		updates, err = bot.UpdatesViaLongPulling(&telego.GetUpdatesParams{
 			Timeout: 4,
 		}, telego.WithLongPullingUpdateInterval(0))
 	} else {
+		err = bot.SetWebhook(&telego.SetWebhookParams{
+			URL: cfg.Settings.WebhookURL + "/bot/" + bot.Token(),
+		})
+		if err != nil {
+			log.Fatalf("Set webhook: %s", err)
+		}
+
 		updates, err = bot.UpdatesViaWebhook("/bot/"+bot.Token(), telego.WithWebhookRouter(rtr),
 			telego.WithWebhookHealthAPI())
 	}

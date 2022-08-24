@@ -62,6 +62,7 @@ type Settings struct {
 	StopTimeout    time.Duration `validate:"required,gte=0"`
 	UseLongPulling bool          `validate:"-"`
 	ServerHost     string        `validate:"hostname_port"`
+	WebhookURL     string        `validate:"url"`
 }
 
 const (
