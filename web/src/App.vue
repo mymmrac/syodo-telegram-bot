@@ -37,7 +37,7 @@ import { onMounted, Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
 import { priceToText, Products } from "@/types"
-import { scrollToTop, sendError } from "@/utils"
+import { scrollToTop, showError, tgVersionSupported } from "@/utils"
 import { useGlobalStore } from "@/store"
 import syodoAPI from "@/syodo-api"
 import botAPI from "@/bot-api"
@@ -45,9 +45,9 @@ import botAPI from "@/bot-api"
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
 // Version check
-const [ major, minor ] = tg.version.split(".").map(Number)
-if (major < 6 || (major == 6 && minor < 1)) {
-  sendError("old-version", tg.version)
+if (!tgVersionSupported("6.1")) {
+  showError("old-version", `Застаріла версія Telegram (v${ tg.version }), очікується щонайменше v6.1`)
+  tg.close()
 }
 
 // Color scheme
@@ -78,14 +78,14 @@ syodoAPI.get<Products>("/products")
     .then(response => {
       if (response.status !== 200) {
         console.error(response)
-        sendError("load-products", "Хмм, не вдалося завантажити меню")
+        showError("load-products", "Хмм, не вдалося завантажити меню", response.statusText)
         return
       }
       allProducts.value = response.data
     })
     .catch(err => {
       console.error(err)
-      sendError("load-products", "Хмм, не вдалося завантажити меню")
+      showError("load-products", "Хмм, не вдалося завантажити меню", err)
     })
     .finally(() => loaded.value = true)
 
@@ -146,12 +146,12 @@ const checkout: Ref<boolean> = ref(false)
 // Order processing
 function confirmOrder() {
   if (order.value.products.size === 0) {
-    sendError("empty-order", "Хмм, у Вас пуста корзина")
+    showError("empty-order", "Хмм, у Вас пуста корзина")
     return
   }
 
   if (!tg.initDataUnsafe.hash || !tg.initDataUnsafe.user?.id || !tg.initDataUnsafe.query_id) {
-    sendError("empty-hash", "Хмм, щось не так з Вашими даними")
+    showError("empty-hash", "Хмм, щось не так з Вашими даними")
     return
   }
 
@@ -187,7 +187,7 @@ function confirmOrder() {
       .then(response => {
         if (response.status !== 200) {
           console.error(response)
-          sendError("order-status", "Хмм, не вдалося щось не так з замовленням")
+          showError("order-status", "Хмм, не вдалося щось не так з замовленням", response.statusText)
           return
         }
 
@@ -197,7 +197,7 @@ function confirmOrder() {
       })
       .catch(err => {
         console.error(err)
-        sendError("order", "Хмм, не вдалося опрацювати замовлення")
+        showError("order", "Хмм, не вдалося опрацювати замовлення", err)
       })
 }
 </script>

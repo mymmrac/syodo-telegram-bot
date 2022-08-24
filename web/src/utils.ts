@@ -14,11 +14,24 @@ export function scrollToID(id: string) {
     document.getElementById(id)?.scrollIntoView()
 }
 
-export function sendError(type: string, data: any) {
-    console.error(`Error type:${ type }, data: ${ data }`)
+export function tgVersionSupported(version: string): boolean {
+    const [ actualMajor, actualMinor ] = tg.version.split(".").map(Number)
+    const [ expectedMajor, expectedMinor ] = version.split(".").map(Number)
+
+    return actualMajor > expectedMajor || (actualMajor == expectedMajor && actualMinor >= expectedMinor)
+}
+
+export function showError(type: string, message: string, err?: any) {
+    console.error(`Type:${ type }, message: ${ message }, error: ${ err }`)
     tg.HapticFeedback.notificationOccurred("error")
-    alert(data)
-    // tg.close() // TODO: Send error to the bot or display to user
+
+    const alertMsg = err ? message + "\n\n" + err : message
+
+    if (tgVersionSupported("6.2")) {
+        tg.showAlert(alertMsg)
+    } else {
+        alert(alertMsg)
+    }
 }
 
 export function href(path: string): string {
