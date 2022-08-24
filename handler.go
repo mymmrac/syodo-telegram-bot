@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -117,6 +118,8 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 
 type OrderProduct struct {
 	ID     string `json:"id"`
+	Title  string `json:"title"`
+	Price  int    `json:"price"`
 	Amount int    `json:"amount"`
 }
 
@@ -166,7 +169,33 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	_, _ = ctx.WriteString("ok")
+	prices := make([]telego.LabeledPrice, len(order.Products))
+	for i, p := range order.Products {
+		prices[i] = telego.LabeledPrice{
+			Label:  fmt.Sprintf("🍣 %s x%d", p.Title, p.Amount),
+			Amount: p.Amount * p.Price,
+		}
+	}
+
+	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
+		Title:                     "SYODO",
+		Description:               "Замовлення",
+		Payload:                   "TODO", // TODO: Fill
+		ProviderToken:             h.cfg.Settings.ProviderToken,
+		Currency:                  "UAH",
+		Prices:                    prices,
+		NeedName:                  true,
+		NeedPhoneNumber:           true,
+		NeedShippingAddress:       true,
+		SendPhoneNumberToProvider: true,
+		IsFlexible:                false, // TODO: Make true
+	})
+	if err != nil || link == nil || *link == "" {
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		return
+	}
+
+	_, _ = ctx.WriteString(*link)
 	ctx.SetStatusCode(fasthttp.StatusOK)
 }
 

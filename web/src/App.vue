@@ -157,9 +157,10 @@ function confirmOrder() {
 
   const finalOrder: {
     appData: string
-
     products: {
       id: string
+      title: string
+      price: number
       amount: number
     }[],
     doNotCall: boolean
@@ -169,10 +170,11 @@ function confirmOrder() {
     comment: string
   } = {
     appData: tg.initData,
-
     products: Array.from(order.value.products.values()).map(op => {
       return {
         id: op.product.id,
+        title: op.product.title,
+        price: Number(op.product.price),
         amount: op.amount,
       }
     }),
