@@ -16,37 +16,40 @@
     <div class="grid grid-cols-1 gap-2 pt-8">
       <label class="flex justify-between gap-2">
         Не телефонуйте мені
-        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow">
+        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow"
+               v-model="order.doNotCall">
       </label>
       <label class="flex justify-between gap-2">
         Без серветок
-        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow">
+        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow"
+               v-model="order.noNapkins">
       </label>
       <div class="flex justify-between gap-2">
         <div class="flex-1">Кількість приборів</div>
-        <add-remove-buttons class="w-24 mt-0" :amount="cutleryCount" :add="() => { cutleryCount++ }"
-                            :remove="() => { cutleryCount-- }"/>
+        <add-remove-buttons class="w-24 mt-0" :amount="order.cutleryCount" :add="() => { order.cutleryCount++ }"
+                            :remove="() => { order.cutleryCount-- }"/>
       </div>
       <div class="flex justify-between gap-2">
         <div class="flex-1">Кількість навчальних приборів</div>
-        <add-remove-buttons class="w-24 mt-0" :amount="trainingCutleryCount" :add="() => { trainingCutleryCount++ }"
-                            :remove="() => { trainingCutleryCount-- }"/>
+        <add-remove-buttons class="w-24 mt-0" :amount="order.trainingCutleryCount"
+                            :add="() => { order.trainingCutleryCount++ }"
+                            :remove="() => { order.trainingCutleryCount-- }"/>
       </div>
       <label class="flex justify-between gap-2">
         Додати коментар до замовлення
         <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow"
-               v-model="addComment">
+               v-model="order.addComment">
       </label>
       <textarea
           class="form-textarea rounded bg-tg-button text-tg-button-text placeholder-tg-button-text focus:ring-0 border-0 shadow resize-none shadow"
-          placeholder="Коментар до замовлення..." v-show="addComment" rows="3"></textarea>
+          placeholder="Коментар до замовлення..." rows="3" v-show="order.addComment"
+          v-model.trim="order.comment"></textarea>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
 
-import { Ref, ref } from "vue"
 import { storeToRefs } from "pinia"
 
 import { useGlobalStore } from "@/store"
@@ -77,8 +80,4 @@ function originalProduct(product: Product): Product {
   const p = store.linkedFromProduct(product)
   return p ? p : product
 }
-
-const addComment: Ref<boolean> = ref(false)
-const cutleryCount: Ref<number> = ref(1)
-const trainingCutleryCount: Ref<number> = ref(0)
 </script>

@@ -11,6 +11,12 @@ export const useGlobalStore = defineStore("global", {
         allProducts: <Products>[],
         order: <Order>{
             products: new Map<string, OrderProduct>(),
+            doNotCall: false,
+            noNapkins: false,
+            cutleryCount: 1,
+            trainingCutleryCount: 0,
+            addComment: false,
+            comment: "",
         },
 
         selectedCategory: categories[0].id,

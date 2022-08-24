@@ -51,6 +51,12 @@ export type OrderProduct = {
 
 export type Order = {
     products: Map<string, OrderProduct>
+    doNotCall: boolean
+    noNapkins: boolean
+    cutleryCount: number
+    trainingCutleryCount: number
+    addComment: boolean
+    comment: string
 }
 
 export type ProductListItem = Product | SubCategory
