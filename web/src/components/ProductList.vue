@@ -60,6 +60,10 @@ function match(product: Product): boolean {
     let s = searchWord
     let p = true
 
+    if (s === "-") {
+      continue
+    }
+
     if (searchWord.startsWith("-")) {
       s = searchWord.substring(1)
       p = false

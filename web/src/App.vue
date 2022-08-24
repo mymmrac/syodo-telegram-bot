@@ -3,7 +3,7 @@
     <div v-show="!checkout">
       <category-list/>
       <div class="w-full px-2 pb-2 flex gap-2">
-        <input type="text" placeholder="Пошук..." v-model.trim="search"
+        <input type="text" placeholder="Пошук..." @input="updateSearch" :value="search"
                class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text shadow">
         <button class="rounded px-2 shadow" @click="store.clearSearch">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
@@ -88,6 +88,11 @@ syodoAPI.get<Products>("/products")
     })
     .finally(() => loaded.value = true)
 
+function updateSearch(e: Event) {
+  const target = e.target as HTMLInputElement
+  search.value = target.value.trim()
+}
+
 // Order
 watch(order, () => {
   if (checkout.value) {
@@ -122,9 +127,42 @@ tg.MainButton.onClick(() => {
     tg.BackButton.show()
     tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
   } else {
-    alert("OK")
+    confirmOrder()
   }
 })
+
+function confirmOrder() {
+  if (order.value.products.size === 0) {
+    sendError("empty-order", null)
+    return
+  }
+
+  const finalOrder: {
+    products: {
+      id: string
+      amount: number
+    }[],
+    doNotCall: boolean
+    noNapkins: boolean
+    cutleryCount: number
+    trainingCutleryCount: number
+    comment: string
+  } = {
+    products: Array.from(order.value.products.values()).map(op => {
+      return {
+        id: op.product.id,
+        amount: op.amount,
+      }
+    }),
+    doNotCall: order.value.doNotCall,
+    noNapkins: order.value.noNapkins,
+    cutleryCount: order.value.cutleryCount,
+    trainingCutleryCount: order.value.trainingCutleryCount,
+    comment: order.value.addComment ? order.value.comment : "",
+  }
+
+  alert(JSON.stringify(finalOrder))
+}
 
 tg.BackButton.onClick(() => {
   checkout.value = false

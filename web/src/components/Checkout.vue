@@ -42,8 +42,7 @@
       </label>
       <textarea
           class="form-textarea rounded bg-tg-button text-tg-button-text placeholder-tg-button-text focus:ring-0 border-0 shadow resize-none shadow"
-          placeholder="Коментар до замовлення..." rows="3" v-show="order.addComment"
-          v-model.trim="order.comment"></textarea>
+          placeholder="Коментар до замовлення..." rows="3" v-show="order.addComment" @input="updateComment"></textarea>
     </div>
   </div>
 </template>
@@ -79,5 +78,10 @@ function originalProduct(product: Product): Product {
 
   const p = store.linkedFromProduct(product)
   return p ? p : product
+}
+
+function updateComment(e: Event) {
+  const target = e.target as HTMLInputElement
+  order.value.comment = target.value.trim()
 }
 </script>
