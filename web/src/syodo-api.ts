@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const syodoAPI = axios.create({
-    baseURL: "https://e0uf7jciif.execute-api.eu-central-1.amazonaws.com/production",
+    baseURL: __SYODO_API__,
     withCredentials: false,
     headers: {
         Accept: "application/json",
