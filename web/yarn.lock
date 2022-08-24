@@ -843,10 +843,10 @@ tailwindcss@^3.1.7:
     quick-lru "^5.1.1"
     resolve "^1.22.1"
 
-telegram-bots-webapps-types@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/telegram-bots-webapps-types/-/telegram-bots-webapps-types-1.0.7.tgz#219ca27ffac3510caad88640507635bf878cf85e"
-  integrity sha512-ML2Llb/37n3kIZ0fKyknUYyA/ZZ+JQdnoMt+65lmxY5hs5NRN77kAeMLNY6l8K2lQ/z1PSlaEfe7C0OztzCkFQ==
+telegram-bots-webapps-types@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/telegram-bots-webapps-types/-/telegram-bots-webapps-types-1.0.8.tgz#174049f55b66c64eae154a3123712bab3edb2b94"
+  integrity sha512-VMFyG2k44Gcp5HrBypqu/JyH/qJgJLDsfcxZ/gJMA3+yaf72+Fo5Bt2QhPzJbOKMufftFc8L9dvjgjAsvjiMvQ==
 
 to-regex-range@^5.0.1:
   version "5.0.1"

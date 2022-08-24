@@ -95,18 +95,22 @@ watch(order, () => {
       checkout.value = false
       tg.MainButton.hide()
       tg.BackButton.hide()
+      tg.disableClosingConfirmation()
       return
     }
 
     tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
+    tg.enableClosingConfirmation()
     return
   }
 
   if (!store.isOrderEmpty) {
     tg.MainButton.setText("Переглянути замовлення")
     tg.MainButton.show()
+    tg.enableClosingConfirmation()
   } else {
     tg.MainButton.hide()
+    tg.disableClosingConfirmation()
   }
 }, { deep: true })
 
