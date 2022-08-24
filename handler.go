@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"net/url"
+	"strings"
 
 	"github.com/fasthttp/router"
 	"github.com/mymmrac/telego"
@@ -119,10 +121,7 @@ type OrderProduct struct {
 }
 
 type OrderRequest struct {
-	UserDataValues string `json:"userDataValues"`
-	UserDataHash   string `json:"userDataHash"`
-	QueryID        string `json:"queryID"`
-	UserID         int64  `json:"userID"`
+	AppData string `json:"appData"`
 
 	Products             []OrderProduct `json:"products"`
 	DoNotCall            bool           `json:"doNotCall"`
@@ -141,13 +140,34 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	appData, err := url.ParseQuery(order.AppData)
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+
+	if !appData.Has("hash") {
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+
+	hash := appData.Get("hash")
+	appData.Del("hash")
+
+	appDataToCheck, err := url.QueryUnescape(strings.ReplaceAll(appData.Encode(), "&", "\n"))
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+
 	secretKey := Hash([]byte(h.bot.Token()), []byte("WebAppData"))
-	if hex.EncodeToString(Hash([]byte(order.UserDataValues), secretKey)) != order.UserDataHash {
+	if hex.EncodeToString(Hash([]byte(appDataToCheck), secretKey)) != hash {
 		ctx.SetStatusCode(fasthttp.StatusForbidden)
 		return
 	}
 
 	_, _ = ctx.WriteString("ok")
+	ctx.SetStatusCode(fasthttp.StatusOK)
 }
 
 func Hash(data, key []byte) []byte {

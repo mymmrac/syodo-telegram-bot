@@ -135,9 +135,6 @@ func start(cfg *config.Config, log *logger.Log) {
 
 		bh.Stop()
 
-		err = log.Close()
-		assert(err == nil, fmt.Errorf("close logger: %w", err))
-
 		done <- struct{}{}
 	}()
 
@@ -155,6 +152,9 @@ func start(cfg *config.Config, log *logger.Log) {
 
 	<-done
 	log.Info("Done")
+
+	err = log.Close()
+	assert(err == nil, fmt.Errorf("close logger: %w", err))
 	// ==== Stopping End ====
 }
 

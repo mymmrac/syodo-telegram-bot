@@ -156,10 +156,7 @@ function confirmOrder() {
   }
 
   const finalOrder: {
-    userDataValues: string
-    userDataHash: string
-    queryID: string
-    userID: number
+    appData: string
 
     products: {
       id: string
@@ -171,10 +168,7 @@ function confirmOrder() {
     trainingCutleryCount: number
     comment: string
   } = {
-    userDataValues: tg.initData,
-    userDataHash: tg.initDataUnsafe.hash,
-    queryID: tg.initDataUnsafe.query_id,
-    userID: tg.initDataUnsafe.user.id,
+    appData: tg.initData,
 
     products: Array.from(order.value.products.values()).map(op => {
       return {
