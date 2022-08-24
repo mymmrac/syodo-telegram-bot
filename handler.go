@@ -1,6 +1,11 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+
 	"github.com/fasthttp/router"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
@@ -108,6 +113,45 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 	}
 }
 
+type OrderProduct struct {
+	ID     string `json:"id"`
+	Amount int    `json:"amount"`
+}
+
+type OrderRequest struct {
+	UserDataValues string `json:"userDataValues"`
+	UserDataHash   string `json:"userDataHash"`
+	QueryID        string `json:"queryID"`
+	UserID         int64  `json:"userID"`
+
+	Products             []OrderProduct `json:"products"`
+	DoNotCall            bool           `json:"doNotCall"`
+	NoNapkins            bool           `json:"noNapkins"`
+	CutleryCount         int            `json:"cutleryCount"`
+	TrainingCutleryCount int            `json:"trainingCutleryCount"`
+	Comment              string         `json:"comment"`
+}
+
 func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
+	data := ctx.PostBody()
+
+	var order OrderRequest
+	if err := json.Unmarshal(data, &order); err != nil {
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+
+	secretKey := Hash([]byte(h.bot.Token()), []byte("WebAppData"))
+	if hex.EncodeToString(Hash([]byte(order.UserDataValues), secretKey)) != order.UserDataHash {
+		ctx.SetStatusCode(fasthttp.StatusForbidden)
+		return
+	}
+
 	_, _ = ctx.WriteString("ok")
+}
+
+func Hash(data, key []byte) []byte {
+	h := hmac.New(sha256.New, key)
+	_, _ = h.Write(data)
+	return h.Sum(nil)
 }

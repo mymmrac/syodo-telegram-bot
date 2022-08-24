@@ -1,6 +1,4 @@
 <template>
-  <button v-if="isDev" class="fixed top-2 left-2 z-30 w-8 h-8 rounded shadow" @click="confirmOrder">*</button>
-
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
       <category-list/>
@@ -45,8 +43,6 @@ import syodoAPI from "@/syodo-api"
 import botAPI from "@/bot-api"
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
-
-const isDev = __IS_DEV__
 
 // Version check
 const [ major, minor ] = tg.version.split(".").map(Number)

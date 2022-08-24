@@ -14,7 +14,6 @@ export default defineConfig({
     },
     base: isProd ? "/syodo/" : "/",
     define: {
-        __IS_DEV__: JSON.stringify(!isProd),
         __SYODO_API__: JSON.stringify("https://e0uf7jciif.execute-api.eu-central-1.amazonaws.com/production"),
         __BOT_API__: JSON.stringify(isProd ? "???" : "http://localhost:8080"),
     },
