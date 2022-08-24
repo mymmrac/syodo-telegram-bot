@@ -16,9 +16,18 @@ lint-list: ## Run golangci-lint linters (print enabled & disabled linters)
 	golangci-lint linters
 
 build: ## Build binary
-	go build -o bin/syodo .
+	GOOS=linux GOARCH=arm64 go build -o bin/syodo .
 
-run: ## Run
-	go run .
+deploy-web:
+	cd web && \
+	yarn build && \
+ 	zip -r dist.zip dist && \
+ 	scp dist.zip ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
+ 	ssh ubuntu@mymm.gq "cd syodo/ && rm -rf dist/ && unzip dist.zip"
 
-.PHONY: help lint lint-install lint-list build
+deploy-bot: build
+	ssh ubuntu@mymm.gq "sudo systemctl stop syodo-bot" && \
+	scp bin/syodo ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
+    ssh ubuntu@mymm.gq "sudo systemctl start syodo-bot"
+
+.PHONY: help lint lint-install lint-list build deploy-web deploy-bot
