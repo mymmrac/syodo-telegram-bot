@@ -162,6 +162,7 @@ function confirmOrder() {
       title: string
       price: number
       amount: number
+      categoryID: string
     }[],
     doNotCall: boolean
     noNapkins: boolean
@@ -176,6 +177,7 @@ function confirmOrder() {
         title: op.product.title,
         price: Number(op.product.price),
         amount: op.amount,
+        categoryID: op.product.category_id,
       }
     }),
     doNotCall: order.value.doNotCall,

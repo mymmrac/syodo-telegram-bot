@@ -69,6 +69,7 @@ func (h *Handler) RegisterHandlers() {
 
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
 	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
+	h.bh.HandlePreCheckoutQuery(h.preCheckout)
 
 	h.rtr.POST("/order", func(ctx *fasthttp.RequestCtx) {
 		h.log.Infof("Received order request: `%s`", string(ctx.PostBody()))
@@ -117,15 +118,15 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 }
 
 type OrderProduct struct {
-	ID     string `json:"id"`
-	Title  string `json:"title"`
-	Price  int    `json:"price"`
-	Amount int    `json:"amount"`
+	ID         string `json:"id"`
+	Title      string `json:"title"`
+	Price      int    `json:"price"`
+	Amount     int    `json:"amount"`
+	CategoryID string `json:"categoryID"`
 }
 
 type OrderRequest struct {
-	AppData string `json:"appData"`
-
+	AppData              string         `json:"appData"`
 	Products             []OrderProduct `json:"products"`
 	DoNotCall            bool           `json:"doNotCall"`
 	NoNapkins            bool           `json:"noNapkins"`
@@ -143,6 +144,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	// TODO: Extract to function
 	appData, err := url.ParseQuery(order.AppData)
 	if err != nil {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
@@ -172,7 +174,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 	prices := make([]telego.LabeledPrice, len(order.Products))
 	for i, p := range order.Products {
 		prices[i] = telego.LabeledPrice{
-			Label:  fmt.Sprintf("🍣 %s x%d", p.Title, p.Amount),
+			Label:  fmt.Sprintf("%s %s x%d", emojiByCategoryID(p.CategoryID), p.Title, p.Amount),
 			Amount: p.Amount * p.Price,
 		}
 	}
@@ -203,4 +205,31 @@ func Hash(data, key []byte) []byte {
 	h := hmac.New(sha256.New, key)
 	_, _ = h.Write(data)
 	return h.Sum(nil)
+}
+
+func emojiByCategoryID(id string) string {
+	switch id {
+	case "13": // Суші
+		return "🍣"
+	case "7": // Роли
+		return "🍱"
+	case "8": // Сети
+		return "🍱"
+	case "9": // Напої
+		return "🥤"
+	case "10": // Соуси
+		return "🍥"
+	case "11": // Десерти
+		return "🍡"
+	default:
+		return "🍱"
+	}
+}
+
+func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
+	err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, true))
+	if err != nil {
+		h.log.Errorf("Answer pre checkout: %s", err)
+		return
+	}
 }
