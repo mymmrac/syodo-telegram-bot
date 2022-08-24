@@ -5,3 +5,5 @@ filename = "server.log"
 
 [settings]
 stopTimeout = "10s"
+useLongPulling = true
+serverHost = "localhost:8080"

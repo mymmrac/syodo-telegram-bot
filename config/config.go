@@ -57,9 +57,11 @@ type Log struct {
 
 // Settings represents general settings
 type Settings struct {
-	BotToken      string        `validate:"required"`
-	ProviderToken string        `validate:"required"`
-	StopTimeout   time.Duration `validate:"required,gte=0"`
+	BotToken       string        `validate:"required"`
+	ProviderToken  string        `validate:"required"`
+	StopTimeout    time.Duration `validate:"required,gte=0"`
+	UseLongPulling bool          `validate:"-"`
+	ServerHost     string        `validate:"hostname_port"`
 }
 
 const (

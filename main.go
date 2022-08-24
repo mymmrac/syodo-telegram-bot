@@ -10,20 +10,23 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/fasthttp/router"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kataras/golog"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
+	"github.com/valyala/fasthttp"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
 var (
-	configFile       = flag.String("config", "config.toml", "Config file")
+	configFile = flag.String("config", "config.toml", "Config file")
+	textFile   = flag.String("text", "text.toml", "Text data file")
+
 	versionRequest   = flag.Bool("version", false, "Version")
 	buildInfoRequest = flag.Bool("build-info", false, "Build info")
-	textFile         = flag.String("text", "text.toml", "Text data file")
 )
 
 func main() {
@@ -71,7 +74,21 @@ func start(cfg *config.Config, log *logger.Log) {
 		log.Fatalf("Create bot: %s", err)
 	}
 
-	updates, err := bot.UpdatesViaLongPulling(nil)
+	rtr := router.New()
+	var srv *fasthttp.Server
+	var updates <-chan telego.Update
+
+	if cfg.Settings.UseLongPulling {
+		srv = &fasthttp.Server{}
+		srv.Handler = rtr.Handler
+
+		updates, err = bot.UpdatesViaLongPulling(&telego.GetUpdatesParams{
+			Timeout: 4,
+		}, telego.WithLongPullingUpdateInterval(0))
+	} else {
+		updates, err = bot.UpdatesViaWebhook("/bot/"+bot.Token(), telego.WithWebhookRouter(rtr),
+			telego.WithWebhookHealthAPI())
+	}
 	if err != nil {
 		log.Fatalf("Get updates: %s", err)
 	}
@@ -82,7 +99,7 @@ func start(cfg *config.Config, log *logger.Log) {
 	}
 	// ==== Dependencies Setup End ====
 
-	handler := NewHandler(cfg, log, bot, bh, textData)
+	handler := NewHandler(cfg, log, bot, bh, rtr, textData)
 	handler.RegisterHandlers()
 
 	// ==== Stopping ====
@@ -94,7 +111,16 @@ func start(cfg *config.Config, log *logger.Log) {
 		<-sigs
 		log.Info("Stopping")
 
-		bot.StopLongPulling()
+		if cfg.Settings.UseLongPulling {
+			bot.StopLongPulling()
+			err = srv.Shutdown()
+		} else {
+			err = bot.StopWebhook()
+		}
+		if err != nil {
+			log.Fatalf("Stop server: %s", err)
+		}
+
 		bh.Stop()
 
 		err = log.Close()
@@ -105,6 +131,15 @@ func start(cfg *config.Config, log *logger.Log) {
 
 	log.Info("Handling updates")
 	go bh.Start()
+
+	if cfg.Settings.UseLongPulling {
+		err = srv.ListenAndServe(cfg.Settings.ServerHost)
+	} else {
+		err = bot.StartListeningForWebhook(cfg.Settings.ServerHost)
+	}
+	if err != nil {
+		log.Fatalf("Start server: %s", err)
+	}
 
 	<-done
 	log.Info("Done")

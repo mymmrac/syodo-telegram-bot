@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/fasthttp/router"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	tu "github.com/mymmrac/telego/telegoutil"
+	"github.com/valyala/fasthttp"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
 	"github.com/mymmrac/syodo-telegram-bot/logger"
@@ -15,16 +17,19 @@ type Handler struct {
 	log  logger.Logger
 	bot  *telego.Bot
 	bh   *th.BotHandler
+	rtr  *router.Router
 	data TextData
 }
 
 // NewHandler creates new Handler
-func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, textData TextData) *Handler {
+func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, rtr *router.Router,
+	textData TextData) *Handler {
 	return &Handler{
 		cfg:  cfg,
 		log:  log,
 		bot:  bot,
 		bh:   bh,
+		rtr:  rtr,
 		data: textData,
 	}
 }
@@ -56,6 +61,11 @@ func (h *Handler) RegisterHandlers() {
 
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
 	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
+
+	h.rtr.POST("/order", func(ctx *fasthttp.RequestCtx) {
+		h.log.Infof("Received order request: `%s`", string(ctx.PostBody()))
+		h.orderHandler(ctx)
+	})
 }
 
 func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
@@ -96,4 +106,8 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 	if err != nil {
 		h.log.Errorf("Send help message: %s", err)
 	}
+}
+
+func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
+	_, _ = ctx.WriteString("ok")
 }
