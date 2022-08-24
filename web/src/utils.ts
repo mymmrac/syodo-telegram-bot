@@ -17,7 +17,7 @@ export function scrollToID(id: string) {
 export function sendError(type: string, data: any) {
     console.error(`Error type:${ type }, data: ${ data }`)
     tg.HapticFeedback.notificationOccurred("error")
-    tg.sendData(`${ type }:${ data }`)
+    tg.close() // TODO: Send error to the bot or display to user
 }
 
 export function href(path: string): string {
