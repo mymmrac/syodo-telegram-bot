@@ -3,11 +3,8 @@ package main
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"strings"
 
 	"github.com/fasthttp/router"
 	"github.com/mymmrac/telego"
@@ -69,6 +66,7 @@ func (h *Handler) RegisterHandlers() {
 
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
 	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
+	h.bh.HandleShippingQuery(h.shipping)
 	h.bh.HandlePreCheckoutQuery(h.preCheckout)
 
 	h.rtr.POST("/order", func(ctx *fasthttp.RequestCtx) {
@@ -144,29 +142,8 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	// TODO: Extract to function
-	appData, err := url.ParseQuery(order.AppData)
+	_, err := tu.ValidateWebAppData(h.bot.Token(), order.AppData)
 	if err != nil {
-		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		return
-	}
-
-	if !appData.Has("hash") {
-		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		return
-	}
-
-	hash := appData.Get("hash")
-	appData.Del("hash")
-
-	appDataToCheck, err := url.QueryUnescape(strings.ReplaceAll(appData.Encode(), "&", "\n"))
-	if err != nil {
-		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		return
-	}
-
-	secretKey := Hash([]byte(h.bot.Token()), []byte("WebAppData"))
-	if hex.EncodeToString(Hash([]byte(appDataToCheck), secretKey)) != hash {
 		ctx.SetStatusCode(fasthttp.StatusForbidden)
 		return
 	}
@@ -190,7 +167,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		NeedPhoneNumber:           true,
 		NeedShippingAddress:       true,
 		SendPhoneNumberToProvider: true,
-		IsFlexible:                false, // TODO: Make true
+		IsFlexible:                true,
 	})
 	if err != nil || link == nil || *link == "" {
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
@@ -223,6 +200,21 @@ func emojiByCategoryID(id string) string {
 		return "🍡"
 	default:
 		return "🍱"
+	}
+}
+
+func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
+	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true,
+		tu.ShippingOption("shipping_regular", "Доставка курєром",
+			tu.LabeledPrice("🛵 Доставка звичайна", 6500),
+		),
+		tu.ShippingOption("take_away", "Самовивіз",
+			tu.LabeledPrice("👋 Самовивіз", -1000),
+		),
+	))
+	if err != nil {
+		h.log.Errorf("Answer shipping: %s", err)
+		return
 	}
 }
 
