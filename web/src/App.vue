@@ -154,7 +154,17 @@ function confirmOrder() {
     return
   }
 
+  if (!tg.initDataUnsafe.hash || !tg.initDataUnsafe.user?.id || !tg.initDataUnsafe.query_id) {
+    sendError("empty-hash", "Хмм, щось не так з Вашими даними")
+    return
+  }
+
   const finalOrder: {
+    userDataValues: string
+    userDataHash: string
+    queryID: string
+    userID: number
+
     products: {
       id: string
       amount: number
@@ -165,6 +175,11 @@ function confirmOrder() {
     trainingCutleryCount: number
     comment: string
   } = {
+    userDataValues: tg.initData,
+    userDataHash: tg.initDataUnsafe.hash,
+    queryID: tg.initDataUnsafe.query_id,
+    userID: tg.initDataUnsafe.user.id,
+
     products: Array.from(order.value.products.values()).map(op => {
       return {
         id: op.product.id,
