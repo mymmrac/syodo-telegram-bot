@@ -1,4 +1,6 @@
 <template>
+  <button v-if="isDev" class="fixed top-2 left-2 z-30 w-8 h-8 rounded shadow" @click="confirmOrder">*</button>
+
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
       <category-list/>
@@ -40,8 +42,11 @@ import { priceToText, Products } from "@/types"
 import { scrollToTop, sendError } from "@/utils"
 import { useGlobalStore } from "@/store"
 import syodoAPI from "@/syodo-api"
+import botAPI from "@/bot-api"
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
+
+const isDev = __IS_DEV__
 
 // Version check
 const [ major, minor ] = tg.version.split(".").map(Number)
@@ -131,9 +136,21 @@ tg.MainButton.onClick(() => {
   }
 })
 
+tg.BackButton.onClick(() => {
+  checkout.value = false
+  scrollToTop()
+
+  tg.BackButton.hide()
+  tg.MainButton.setText("Переглянути замовлення")
+})
+
+// Checkout
+const checkout: Ref<boolean> = ref(false)
+
+// Order processing
 function confirmOrder() {
   if (order.value.products.size === 0) {
-    sendError("empty-order", null)
+    sendError("empty-order", "Хмм, у Вас пуста корзина")
     return
   }
 
@@ -161,19 +178,23 @@ function confirmOrder() {
     comment: order.value.addComment ? order.value.comment : "",
   }
 
-  alert(JSON.stringify(finalOrder))
+  botAPI.post("/order", finalOrder)
+      .then(response => {
+        if (response.status !== 200) {
+          console.error(response)
+          sendError("order-status", "Хмм, не вдалося щось не так з замовленням")
+          return
+        }
+
+        console.log(response.data)
+        const invoiceURL: string = response.data
+        tg.openInvoice(invoiceURL)
+      })
+      .catch(err => {
+        console.error(err)
+        sendError("order", "Хмм, не вдалося опрацювати замовлення")
+      })
 }
-
-tg.BackButton.onClick(() => {
-  checkout.value = false
-  scrollToTop()
-
-  tg.BackButton.hide()
-  tg.MainButton.setText("Переглянути замовлення")
-})
-
-// Checkout
-const checkout: Ref<boolean> = ref(false)
 </script>
 
 <style scoped lang="scss">
