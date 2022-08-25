@@ -3,8 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"strconv"
+	"time"
 
 	"github.com/fasthttp/router"
+	"github.com/mymmrac/memkey"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	tu "github.com/mymmrac/telego/telegoutil"
@@ -16,24 +20,28 @@ import (
 
 // Handler represents update handler
 type Handler struct {
-	cfg  *config.Config
-	log  logger.Logger
-	bot  *telego.Bot
-	bh   *th.BotHandler
-	rtr  *router.Router
-	data TextData
+	cfg           *config.Config
+	log           logger.Logger
+	bot           *telego.Bot
+	bh            *th.BotHandler
+	rtr           *router.Router
+	data          TextData
+	orderStore    *memkey.Store[string]
+	orderTTLStore *memkey.Store[string]
 }
 
 // NewHandler creates new Handler
 func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, rtr *router.Router,
 	textData TextData) *Handler {
 	return &Handler{
-		cfg:  cfg,
-		log:  log,
-		bot:  bot,
-		bh:   bh,
-		rtr:  rtr,
-		data: textData,
+		cfg:           cfg,
+		log:           log,
+		bot:           bot,
+		bh:            bh,
+		rtr:           rtr,
+		data:          textData,
+		orderStore:    &memkey.Store[string]{},
+		orderTTLStore: &memkey.Store[string]{},
 	}
 }
 
@@ -114,22 +122,33 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 	}
 }
 
-type OrderProduct struct {
-	ID         string `json:"id"`
-	Title      string `json:"title"`
-	Price      int    `json:"price"`
-	Amount     int    `json:"amount"`
-	CategoryID string `json:"categoryID"`
+const currency = "UAH"
+const orderKeyBound = 100000000
+const orderTTL = time.Hour
+
+func (h *Handler) storeOrder(order OrderRequest) string {
+	// Generates an order key that will be the same length as boundary - 1
+	orderKey := strconv.Itoa(rand.Intn(orderKeyBound) + orderKeyBound/10 + 1)
+
+	memkey.Set(h.orderStore, orderKey, order)
+	memkey.Set(h.orderTTLStore, orderKey, time.Now().UTC())
+
+	return orderKey
 }
 
-type OrderRequest struct {
-	AppData              string         `json:"appData"`
-	Products             []OrderProduct `json:"products"`
-	DoNotCall            bool           `json:"doNotCall"`
-	NoNapkins            bool           `json:"noNapkins"`
-	CutleryCount         int            `json:"cutleryCount"`
-	TrainingCutleryCount int            `json:"trainingCutleryCount"`
-	Comment              string         `json:"comment"`
+func (h *Handler) getOrder(key string) (OrderRequest, bool) {
+	return memkey.Get[OrderRequest](h.orderStore, key)
+}
+
+func (h *Handler) invalidateOldOrders() {
+	ttlTime := time.Now().UTC().Add(-orderTTL)
+
+	for _, e := range memkey.Entries[time.Time](h.orderTTLStore) {
+		if ttlTime.After(e.Value) {
+			h.orderStore.Delete(e.Key)
+			h.orderTTLStore.Delete(e.Key)
+		}
+	}
 }
 
 func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
@@ -147,12 +166,15 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	prices := make([]telego.LabeledPrice, len(order.Products))
-	for i, p := range order.Products {
-		prices[i] = telego.LabeledPrice{
+	h.invalidateOldOrders()
+	orderKey := h.storeOrder(order)
+
+	prices := make([]telego.LabeledPrice, 0, len(order.Products))
+	for _, p := range order.Products {
+		prices = append(prices, telego.LabeledPrice{
 			Label:  fmt.Sprintf("%s %d 𐄂 %s", emojiByCategoryID(p.CategoryID), p.Amount, p.Title),
 			Amount: p.Amount * p.Price,
-		}
+		})
 	}
 
 	if order.CutleryCount > 0 {
@@ -168,9 +190,9 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
 		Title:                     "SYODO",
 		Description:               "Замовлення",
-		Payload:                   "TODO", // TODO: Fill
+		Payload:                   orderKey,
 		ProviderToken:             h.cfg.Settings.ProviderToken,
-		Currency:                  "UAH",
+		Currency:                  currency,
 		Prices:                    prices,
 		NeedName:                  true,
 		NeedPhoneNumber:           true,
@@ -191,9 +213,7 @@ func emojiByCategoryID(id string) string {
 	switch id {
 	case "13": // Суші
 		return "🍣"
-	case "7": // Роли
-		return "🍱"
-	case "8": // Сети
+	case "7", "8": // Роли, Сети
 		return "🍱"
 	case "9": // Напої
 		return "🥤"
@@ -207,6 +227,19 @@ func emojiByCategoryID(id string) string {
 }
 
 func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
+	_, ok := h.getOrder(query.InvoicePayload)
+
+	if !ok {
+		err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, false).
+			WithErrorMessage(h.data.Text("orderNotFoundError")))
+		if err != nil {
+			h.log.Errorf("Answer shipping: %s", err)
+			return
+		}
+
+		return
+	}
+
 	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true,
 		tu.ShippingOption("shipping_regular", "Доставка курєром",
 			tu.LabeledPrice("🛵 Доставка звичайна", 6500),
@@ -222,6 +255,19 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 }
 
 func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
+	_, ok := h.getOrder(query.InvoicePayload)
+
+	if !ok {
+		err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, false).
+			WithErrorMessage(h.data.Text("orderNotFoundError")))
+		if err != nil {
+			h.log.Errorf("Answer pre checkout: %s", err)
+			return
+		}
+
+		return
+	}
+
 	err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, true))
 	if err != nil {
 		h.log.Errorf("Answer pre checkout: %s", err)

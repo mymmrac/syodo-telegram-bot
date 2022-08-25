@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -63,6 +64,8 @@ func main() {
 func start(cfg *config.Config, log *logger.Log) {
 	// ==== Dependencies Setup ====
 	log.Info("Setting up")
+
+	rand.Seed(time.Now().Unix())
 
 	textData, err := LoadTextData(*textFile)
 	if err != nil {

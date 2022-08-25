@@ -30,6 +30,7 @@ deploy-web:
 
 deploy-bot: build
 	ssh ubuntu@mymm.gq "sudo systemctl stop syodo-bot" && \
+	scp text.toml ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
 	scp bin/syodo ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
     ssh ubuntu@mymm.gq "sudo systemctl start syodo-bot"
 

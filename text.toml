@@ -35,3 +35,6 @@ facebookURL = "https://www.facebook.com/syodo.sushi.lviv"
 
 # Menu button text
 menuButton = "Меню"
+
+# Error that is displayed if order was not found
+orderNotFoundError = "На жаль, ми не можемо знайти Ваше замовлення"

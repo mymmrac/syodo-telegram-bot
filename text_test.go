@@ -22,6 +22,7 @@ func TestTextData(t *testing.T) {
 		"instagramURL",
 		"facebookURL",
 		"menuButton",
+		"orderNotFoundError",
 	}
 
 	templates := []struct {
