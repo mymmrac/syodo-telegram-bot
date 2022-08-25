@@ -82,7 +82,7 @@ func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
 			WithReplyMarkup(tu.InlineKeyboard(
 				tu.InlineKeyboardRow(
 					tu.InlineKeyboardButton(h.data.Text("menuButton")).
-						WithWebApp(&telego.WebAppInfo{URL: h.data.Text("webAppURL")}),
+						WithWebApp(&telego.WebAppInfo{URL: h.cfg.Settings.WebAppURL}),
 				),
 			)),
 	)
