@@ -212,9 +212,14 @@ function confirmOrder() {
 function invoiceResult(result: string) {
   switch (result) {
     case "paid":
+      tg.HapticFeedback.notificationOccurred("success")
       tg.close()
       return
+    case "cancelled":
+      tg.HapticFeedback.notificationOccurred("warning")
+      return
     case "failed":
+      tg.HapticFeedback.notificationOccurred("error")
       return
   }
 

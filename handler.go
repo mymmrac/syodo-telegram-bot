@@ -65,7 +65,8 @@ func (h *Handler) RegisterHandlers() {
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
 	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
 	h.bh.HandleShippingQuery(h.shipping)
-	h.bh.HandlePreCheckoutQuery(h.preCheckout)
+	h.bh.HandlePreCheckoutQuery(h.preCheckout) // TODO: Check if it does not for second time in first failed
+	h.bh.HandleMessage(h.successPayment, th.SuccessPayment())
 
 	h.rtr.POST("/order", func(ctx *fasthttp.RequestCtx) {
 		h.log.Infof("Received order request: `%s`", string(ctx.PostBody()))
@@ -224,6 +225,19 @@ func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
 	err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, true))
 	if err != nil {
 		h.log.Errorf("Answer pre checkout: %s", err)
+		return
+	}
+}
+
+func (h *Handler) successPayment(bot *telego.Bot, message telego.Message) {
+	chatID := message.Chat.ID
+	payment := message.SuccessfulPayment
+
+	total := float64(payment.TotalAmount) / 100
+
+	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("Дякуємо за оплату!\nСума: %0.2fгрн", total)))
+	if err != nil {
+		h.log.Errorf("Send success payment message: %s", err)
 		return
 	}
 }
