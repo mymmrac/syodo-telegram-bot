@@ -154,6 +154,16 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		}
 	}
 
+	if order.CutleryCount > 0 {
+		prices = append(prices, tu.LabeledPrice(fmt.Sprintf("🥢 %d 𐄂 Прибори", order.CutleryCount), 0))
+	}
+	if order.TrainingCutleryCount > 0 {
+		prices = append(prices, tu.LabeledPrice(fmt.Sprintf("🥢 %d 𐄂 Навчальні прибори", order.TrainingCutleryCount), 0))
+	}
+	if !order.NoNapkins {
+		prices = append(prices, tu.LabeledPrice("🧻 Серветки", 0))
+	}
+
 	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
 		Title:                     "SYODO",
 		Description:               "Замовлення",
