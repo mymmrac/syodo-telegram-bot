@@ -145,12 +145,16 @@ const checkout: Ref<boolean> = ref(false)
 
 // Order processing
 function confirmOrder() {
+  tg.MainButton.showProgress(false)
+
   if (order.value.products.size === 0) {
+    tg.MainButton.hideProgress()
     showError("empty-order", "Хмм, у Вас пуста корзина")
     return
   }
 
   if (!tg.initDataUnsafe.hash || !tg.initDataUnsafe.user?.id || !tg.initDataUnsafe.query_id) {
+    tg.MainButton.hideProgress()
     showError("empty-hash", "Хмм, щось не так з Вашими даними")
     return
   }
@@ -190,20 +194,36 @@ function confirmOrder() {
   botAPI.post("/order", finalOrder)
       .then(response => {
         if (response.status !== 200) {
-          console.error(response)
           showError("order-status", "Хмм, не вдалося щось не так з замовленням", response.statusText)
           return
         }
 
-        console.log(response.data)
         const invoiceURL: string = response.data
-        tg.openInvoice(invoiceURL)
+        tg.openInvoice(invoiceURL, invoiceResult)
       })
       .catch(err => {
-        console.error(err)
         showError("order", "Хмм, не вдалося опрацювати замовлення", err)
       })
+      .finally(() => {
+        tg.MainButton.hideProgress()
+      })
 }
+
+function invoiceResult(result: string) {
+  switch (result) {
+    case "paid":
+      tg.close()
+      return
+    case "failed":
+      return
+  }
+
+  showError("invoice", "Хмм, щось не так з оплатою", `Статус: ${ result }`)
+}
+
+tg.onEvent("invoiceClosed", () => {
+  tg.MainButton.hideProgress()
+})
 </script>
 
 <style scoped lang="scss">
