@@ -63,6 +63,7 @@ type Settings struct {
 	UseLongPulling bool          `validate:"-"`
 	ServerHost     string        `validate:"hostname_port"`
 	WebhookURL     string        `validate:"url"`
+	WebAppURL      string        `validate:"url"`
 }
 
 const (

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 
@@ -56,7 +54,7 @@ func (h *Handler) RegisterHandlers() {
 			Type: telego.ButtonTypeWebApp,
 			Text: h.data.Text("menuButton"),
 			WebApp: telego.WebAppInfo{
-				URL: h.data.Text("webAppURL"),
+				URL: h.cfg.Settings.WebAppURL,
 			},
 		},
 	})
@@ -151,7 +149,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 	prices := make([]telego.LabeledPrice, len(order.Products))
 	for i, p := range order.Products {
 		prices[i] = telego.LabeledPrice{
-			Label:  fmt.Sprintf("%s %s x%d", emojiByCategoryID(p.CategoryID), p.Title, p.Amount),
+			Label:  fmt.Sprintf("%s %d 𐄂 %s", emojiByCategoryID(p.CategoryID), p.Amount, p.Title),
 			Amount: p.Amount * p.Price,
 		}
 	}
@@ -176,12 +174,6 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 
 	_, _ = ctx.WriteString(*link)
 	ctx.SetStatusCode(fasthttp.StatusOK)
-}
-
-func Hash(data, key []byte) []byte {
-	h := hmac.New(sha256.New, key)
-	_, _ = h.Write(data)
-	return h.Sum(nil)
 }
 
 func emojiByCategoryID(id string) string {
