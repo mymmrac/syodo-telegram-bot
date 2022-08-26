@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/fasthttp/router"
@@ -123,12 +122,11 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 }
 
 const currency = "UAH"
-const orderKeyBound = 100000000
+const orderKeyBound = 1_000_000
 const orderTTL = time.Hour
 
 func (h *Handler) storeOrder(order OrderRequest) string {
-	// Generates an order key that will be the same length as boundary - 1
-	orderKey := strconv.Itoa(rand.Intn(orderKeyBound) + orderKeyBound/10 + 1)
+	orderKey := fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
 
 	memkey.Set(h.orderStore, orderKey, order)
 	memkey.Set(h.orderTTLStore, orderKey, time.Now().UTC())
@@ -188,8 +186,8 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 	}
 
 	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
-		Title:                     "SYODO",
-		Description:               "Замовлення",
+		Title:                     "Замовлення #" + orderKey,
+		Description:               "SYODŌ – доставка японської кухні, що поважає деталі!",
 		Payload:                   orderKey,
 		ProviderToken:             h.cfg.Settings.ProviderToken,
 		Currency:                  currency,
@@ -281,7 +279,8 @@ func (h *Handler) successPayment(bot *telego.Bot, message telego.Message) {
 
 	total := float64(payment.TotalAmount) / 100
 
-	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), fmt.Sprintf("Дякуємо за оплату!\nСума: %0.2fгрн", total)))
+	_, err := bot.SendMessage(tu.Message(tu.ID(chatID),
+		fmt.Sprintf("Замовлення #%s\n\nДякуємо за оплату!\nСума: %0.2fгрн", payment.InvoicePayload, total)))
 	if err != nil {
 		h.log.Errorf("Send success payment message: %s", err)
 		return
