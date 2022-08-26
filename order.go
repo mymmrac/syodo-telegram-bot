@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type OrderProduct struct {
 	ID         string `json:"id"`
 	Title      string `json:"title"`
@@ -16,4 +18,9 @@ type OrderRequest struct {
 	CutleryCount         int            `json:"cutleryCount"`
 	TrainingCutleryCount int            `json:"trainingCutleryCount"`
 	Comment              string         `json:"comment"`
+}
+
+type OrderDetails struct {
+	Request   OrderRequest `json:"request"`
+	CreatedAt time.Time    `json:"createdAt"`
 }

@@ -19,28 +19,26 @@ import (
 
 // Handler represents update handler
 type Handler struct {
-	cfg           *config.Config
-	log           logger.Logger
-	bot           *telego.Bot
-	bh            *th.BotHandler
-	rtr           *router.Router
-	data          TextData
-	orderStore    *memkey.Store[string]
-	orderTTLStore *memkey.Store[string]
+	cfg        *config.Config
+	log        logger.Logger
+	bot        *telego.Bot
+	bh         *th.BotHandler
+	rtr        *router.Router
+	data       TextData
+	orderStore *memkey.Store[string]
 }
 
 // NewHandler creates new Handler
 func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, rtr *router.Router,
 	textData TextData) *Handler {
 	return &Handler{
-		cfg:           cfg,
-		log:           log,
-		bot:           bot,
-		bh:            bh,
-		rtr:           rtr,
-		data:          textData,
-		orderStore:    &memkey.Store[string]{},
-		orderTTLStore: &memkey.Store[string]{},
+		cfg:        cfg,
+		log:        log,
+		bot:        bot,
+		bh:         bh,
+		rtr:        rtr,
+		data:       textData,
+		orderStore: &memkey.Store[string]{},
 	}
 }
 
@@ -128,23 +126,24 @@ const orderTTL = time.Hour
 func (h *Handler) storeOrder(order OrderRequest) string {
 	orderKey := fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
 
-	memkey.Set(h.orderStore, orderKey, order)
-	memkey.Set(h.orderTTLStore, orderKey, time.Now().UTC())
+	memkey.Set(h.orderStore, orderKey, OrderDetails{
+		Request:   order,
+		CreatedAt: time.Now().UTC(),
+	})
 
 	return orderKey
 }
 
-func (h *Handler) getOrder(key string) (OrderRequest, bool) {
-	return memkey.Get[OrderRequest](h.orderStore, key)
+func (h *Handler) getOrder(key string) (OrderDetails, bool) {
+	return memkey.Get[OrderDetails](h.orderStore, key)
 }
 
 func (h *Handler) invalidateOldOrders() {
 	ttlTime := time.Now().UTC().Add(-orderTTL)
 
-	for _, e := range memkey.Entries[time.Time](h.orderTTLStore) {
-		if ttlTime.After(e.Value) {
+	for _, e := range memkey.Entries[OrderDetails](h.orderStore) {
+		if ttlTime.After(e.Value.CreatedAt) {
 			h.orderStore.Delete(e.Key)
-			h.orderTTLStore.Delete(e.Key)
 		}
 	}
 }
