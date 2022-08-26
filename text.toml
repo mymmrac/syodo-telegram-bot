@@ -38,3 +38,14 @@ menuButton = "Меню"
 
 # Error that is displayed if order was not found
 orderNotFoundError = "На жаль, ми не можемо знайти Ваше замовлення"
+
+# Description of the order
+orderDescription = "SYODŌ – доставка японської кухні, що поважає деталі!"
+
+# Success payment message, data: SuccessPayment
+successPayment = """
+Дякуємо за оплату!
+Замовлення #{{ .InvoicePayload }}
+
+Сума: {{ toPrice  .TotalAmount }}грн
+"""

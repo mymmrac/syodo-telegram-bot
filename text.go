@@ -40,9 +40,15 @@ func LoadTextData(filename string) (TextData, error) {
 
 	textData := make(map[string]*template.Template, len(textValues))
 
+	fm := template.FuncMap{
+		"toPrice": func(amount int) string {
+			return fmt.Sprintf("%.2f", float64(amount)/100.0)
+		},
+	}
+
 	for key, value := range textValues {
 		transformedValue := strings.TrimSpace(strings.ReplaceAll(value, "|\n", ""))
-		textData[key], err = template.New(key).Parse(transformedValue)
+		textData[key], err = template.New(key).Funcs(fm).Parse(transformedValue)
 		if err != nil {
 			return nil, fmt.Errorf("parsing text data of %q with value %q, error: %w", key, transformedValue, err)
 		}

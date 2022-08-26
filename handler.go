@@ -17,6 +17,10 @@ import (
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
+const currency = "UAH"
+const orderTTL = time.Hour * 4
+const orderKeyBound = 1_000_000
+
 // Handler represents update handler
 type Handler struct {
 	cfg        *config.Config
@@ -119,10 +123,6 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 	}
 }
 
-const currency = "UAH"
-const orderKeyBound = 1_000_000
-const orderTTL = time.Hour
-
 func (h *Handler) storeOrder(order OrderRequest) string {
 	orderKey := fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
 
@@ -186,7 +186,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 
 	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
 		Title:                     "Замовлення #" + orderKey,
-		Description:               "SYODŌ – доставка японської кухні, що поважає деталі!",
+		Description:               h.data.Text("orderDescription"),
 		Payload:                   orderKey,
 		ProviderToken:             h.cfg.Settings.ProviderToken,
 		Currency:                  currency,
@@ -276,10 +276,7 @@ func (h *Handler) successPayment(bot *telego.Bot, message telego.Message) {
 	chatID := message.Chat.ID
 	payment := message.SuccessfulPayment
 
-	total := float64(payment.TotalAmount) / 100
-
-	_, err := bot.SendMessage(tu.Message(tu.ID(chatID),
-		fmt.Sprintf("Замовлення #%s\n\nДякуємо за оплату!\nСума: %0.2fгрн", payment.InvoicePayload, total)))
+	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), h.data.Temp("successPayment", payment)))
 	if err != nil {
 		h.log.Errorf("Send success payment message: %s", err)
 		return

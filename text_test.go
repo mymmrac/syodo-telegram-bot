@@ -23,6 +23,7 @@ func TestTextData(t *testing.T) {
 		"facebookURL",
 		"menuButton",
 		"orderNotFoundError",
+		"orderDescription",
 	}
 
 	templates := []struct {
@@ -30,15 +31,23 @@ func TestTextData(t *testing.T) {
 		data any
 	}{
 		{
-			"start",
-			&telego.Message{
+			key: "start",
+			data: telego.Message{
 				From: &telego.User{},
 			},
 		},
 		{
-			"help",
-			&telego.Message{
+			key: "help",
+			data: telego.Message{
 				From: &telego.User{},
+			},
+		},
+		{
+			key: "successPayment",
+			data: telego.SuccessfulPayment{
+				OrderInfo: &telego.OrderInfo{
+					ShippingAddress: &telego.ShippingAddress{},
+				},
 			},
 		},
 	}
