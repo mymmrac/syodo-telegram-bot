@@ -1,17 +1,19 @@
 <template>
   <div class="px-2">
     <div class="grid grid-cols-1 divide-y divide-tg-hint">
-      <div v-for="orderProduct in order.products.values()" :key="orderProduct.product.id" class="py-2">
-        <div class="flex flex-nowrap gap-2 items-center justify-between ">
-          <div class="aspect-square w-16 shadow rounded bg-white grid place-content-center cursor-pointer">
-            <img :src="getImage(originalProduct(orderProduct.product))" :alt="orderProduct.product.title"
-                 class="rounded">
+      <transition-group name="m-fade">
+        <div v-for="orderProduct in order.products.values()" :key="orderProduct.product.id" class="py-2">
+          <div class="flex flex-nowrap gap-2 items-center justify-between ">
+            <div class="aspect-square w-16 shadow rounded bg-white grid place-content-center cursor-pointer">
+              <img :src="getImage(originalProduct(orderProduct.product))" :alt="orderProduct.product.title"
+                   class="rounded">
+            </div>
+            <div class="flex-1 truncate" :title="orderProduct.product.title">{{ orderProduct.product.title }}</div>
+            <add-remove-buttons fixed-size :amount="orderProduct.amount" :add="() => addProduct(orderProduct)"
+                                :remove="() => removeProduct(orderProduct)"/>
           </div>
-          <div class="flex-1 truncate" :title="orderProduct.product.title">{{ orderProduct.product.title }}</div>
-          <add-remove-buttons fixed-size :amount="orderProduct.amount" :add="() => addProduct(orderProduct)"
-                              :remove="() => removeProduct(orderProduct)"/>
         </div>
-      </div>
+      </transition-group>
     </div>
     <div class="grid grid-cols-1 gap-2 pt-8">
       <label class="flex justify-between gap-2">
@@ -37,9 +39,12 @@
         Додати коментар до замовлення
         <input type="checkbox" class="m-checkbox" v-model="order.addComment">
       </label>
-      <textarea
-          class="form-textarea rounded bg-tg-button text-tg-button-text placeholder-tg-button-text focus:ring-0 border-0 shadow resize-none shadow"
-          placeholder="Коментар до замовлення..." rows="3" v-show="order.addComment" @input="updateComment"></textarea>
+      <transition name="m-fade">
+        <textarea
+            class="form-textarea rounded bg-tg-button text-tg-button-text placeholder-tg-button-text focus:ring-0 border-0 shadow resize-none shadow"
+            placeholder="Коментар до замовлення..." rows="3" v-show="order.addComment"
+            @input="updateComment"></textarea>
+      </transition>
     </div>
   </div>
 </template>
@@ -85,6 +90,19 @@ function updateComment(e: Event) {
 
 <style scoped lang="scss">
 .m-checkbox {
-  @apply form-checkbox rounded focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow;
+  @apply form-checkbox rounded focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200;
+}
+
+.m-fade {
+  &-enter-active,
+  &-leave-active {
+    transition: all 0.4s ease;
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
 }
 </style>
