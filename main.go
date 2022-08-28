@@ -59,8 +59,12 @@ func main() {
 	// ==== Logger End ====
 
 	start(cfg, log)
+
+	err = log.Close()
+	assert(err == nil, fmt.Errorf("close logger: %w", err))
 }
 
+//nolint:funlen,cyclop
 func start(cfg *config.Config, log *logger.Log) {
 	// ==== Dependencies Setup ====
 	log.Info("Setting up")
@@ -117,7 +121,7 @@ func start(cfg *config.Config, log *logger.Log) {
 	handler := NewHandler(cfg, log, bot, bh, rtr, textData)
 	handler.RegisterHandlers()
 
-	// ==== Stopping ====
+	// ==== Starting / Stopping ====
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan struct{}, 1)
@@ -155,10 +159,7 @@ func start(cfg *config.Config, log *logger.Log) {
 
 	<-done
 	log.Info("Done")
-
-	err = log.Close()
-	assert(err == nil, fmt.Errorf("close logger: %w", err))
-	// ==== Stopping End ====
+	// ==== Starting / Stopping End ====
 }
 
 func displayBuildInfo() {
