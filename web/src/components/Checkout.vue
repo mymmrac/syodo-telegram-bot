@@ -1,5 +1,5 @@
 <template>
-  <div class=" px-2">
+  <div class="px-2">
     <div class="grid grid-cols-1 divide-y divide-tg-hint">
       <div v-for="orderProduct in order.products.values()" :key="orderProduct.product.id" class="py-2">
         <div class="flex flex-nowrap gap-2 items-center justify-between ">
@@ -16,13 +16,11 @@
     <div class="grid grid-cols-1 gap-2 pt-8">
       <label class="flex justify-between gap-2">
         Не телефонуйте мені
-        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow"
-               v-model="order.doNotCall">
+        <input type="checkbox" class="m-checkbox" v-model="order.doNotCall">
       </label>
       <label class="flex justify-between gap-2">
         Без серветок
-        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow"
-               v-model="order.noNapkins">
+        <input type="checkbox" class="m-checkbox" v-model="order.noNapkins">
       </label>
       <div class="flex justify-between gap-2">
         <div class="flex-1">Кількість приборів</div>
@@ -37,8 +35,7 @@
       </div>
       <label class="flex justify-between gap-2">
         Додати коментар до замовлення
-        <input type="checkbox" class="form-checkbox rounded focus:ring-0 text-tg-button w-8 h-8 border-0 shadow"
-               v-model="order.addComment">
+        <input type="checkbox" class="m-checkbox" v-model="order.addComment">
       </label>
       <textarea
           class="form-textarea rounded bg-tg-button text-tg-button-text placeholder-tg-button-text focus:ring-0 border-0 shadow resize-none shadow"
@@ -85,3 +82,9 @@ function updateComment(e: Event) {
   order.value.comment = target.value.trim()
 }
 </script>
+
+<style scoped lang="scss">
+.m-checkbox {
+  @apply form-checkbox rounded focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow;
+}
+</style>
