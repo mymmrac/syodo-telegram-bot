@@ -17,9 +17,11 @@ import (
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
-const currency = "UAH"
-const orderTTL = time.Hour * 4
-const orderKeyBound = 1_000_000
+const (
+	currency      = "UAH"
+	orderTTL      = time.Hour * 4
+	orderKeyBound = 1_000_000
+)
 
 // Handler represents update handler
 type Handler struct {
@@ -34,7 +36,8 @@ type Handler struct {
 
 // NewHandler creates new Handler
 func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, rtr *router.Router,
-	textData TextData) *Handler {
+	textData TextData,
+) *Handler {
 	return &Handler{
 		cfg:        cfg,
 		log:        log,
@@ -63,7 +66,7 @@ func (h *Handler) RegisterHandlers() {
 			Type: telego.ButtonTypeWebApp,
 			Text: h.data.Text("menuButton"),
 			WebApp: telego.WebAppInfo{
-				URL: h.cfg.Settings.WebAppURL,
+				URL: h.cfg.App.WebAppURL,
 			},
 		},
 	})
@@ -91,7 +94,7 @@ func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
 			WithReplyMarkup(tu.InlineKeyboard(
 				tu.InlineKeyboardRow(
 					tu.InlineKeyboardButton(h.data.Text("menuButton")).
-						WithWebApp(&telego.WebAppInfo{URL: h.cfg.Settings.WebAppURL}),
+						WithWebApp(&telego.WebAppInfo{URL: h.cfg.App.WebAppURL}),
 				),
 			)),
 	)
@@ -124,6 +127,7 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 }
 
 func (h *Handler) storeOrder(order OrderRequest) string {
+	//nolint:gosec
 	orderKey := fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
 
 	memkey.Set(h.orderStore, orderKey, OrderDetails{
@@ -188,7 +192,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		Title:                     "Замовлення #" + orderKey,
 		Description:               h.data.Text("orderDescription"),
 		Payload:                   orderKey,
-		ProviderToken:             h.cfg.Settings.ProviderToken,
+		ProviderToken:             h.cfg.App.ProviderToken,
 		Currency:                  currency,
 		Prices:                    prices,
 		NeedName:                  true,
@@ -202,6 +206,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	//nolint:errcheck
 	_, _ = ctx.WriteString(*link)
 	ctx.SetStatusCode(fasthttp.StatusOK)
 }
@@ -239,10 +244,10 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 
 	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true,
 		tu.ShippingOption("shipping_regular", "Доставка курєром",
-			tu.LabeledPrice("🛵 Доставка звичайна", 6500),
+			tu.LabeledPrice("🛵 Доставка звичайна", h.cfg.App.Prices.RegularDelivery),
 		),
-		tu.ShippingOption("take_away", "Самовивіз",
-			tu.LabeledPrice("👋 Самовивіз", -1000),
+		tu.ShippingOption("self_pickup", "Самовивіз",
+			tu.LabeledPrice("👋 Самовивіз", h.cfg.App.Prices.SelfPickup),
 		),
 	))
 	if err != nil {

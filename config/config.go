@@ -23,13 +23,13 @@ func LoadConfig(filename string) (*Config, error) {
 	var ok bool
 
 	const botTokenEnv = "BOT_TOKEN"
-	cfg.Settings.BotToken, ok = os.LookupEnv(botTokenEnv)
+	cfg.App.BotToken, ok = os.LookupEnv(botTokenEnv)
 	if !ok {
 		return nil, fmt.Errorf("no %q environment variable", botTokenEnv)
 	}
 
 	const providerTokenEnv = "PROVIDER_TOKEN"
-	cfg.Settings.ProviderToken, ok = os.LookupEnv(providerTokenEnv)
+	cfg.App.ProviderToken, ok = os.LookupEnv(providerTokenEnv)
 	if !ok {
 		return nil, fmt.Errorf("no %q environment variable", providerTokenEnv)
 	}
@@ -46,6 +46,7 @@ func LoadConfig(filename string) (*Config, error) {
 type Config struct {
 	Log      Log
 	Settings Settings
+	App      App
 }
 
 // Log represents logger config
@@ -57,13 +58,25 @@ type Log struct {
 
 // Settings represents general settings
 type Settings struct {
-	BotToken       string        `validate:"required"`
-	ProviderToken  string        `validate:"required"`
-	StopTimeout    time.Duration `validate:"required,gte=0"`
-	UseLongPulling bool          `validate:"-"`
-	ServerHost     string        `validate:"hostname_port"`
-	WebhookURL     string        `validate:"url"`
-	WebAppURL      string        `validate:"url"`
+	StopTimeout        time.Duration `validate:"gte=0"`
+	UseLongPulling     bool          `validate:"-"`
+	ServerHost         string        `validate:"hostname_port"`
+	WebhookURL         string        `validate:"url"`
+	LongPullingTimeout int           `validate:"gte=0"`
+}
+
+// App represents business logic settings
+type App struct {
+	BotToken      string `validate:"required"`
+	ProviderToken string `validate:"required"`
+	WebAppURL     string `validate:"url"`
+	Prices        Prices
+}
+
+// Prices represents prices for different services
+type Prices struct {
+	RegularDelivery int `validate:"-"`
+	SelfPickup      int `validate:"-"`
 }
 
 const (

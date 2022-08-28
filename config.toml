@@ -8,4 +8,11 @@ stopTimeout = "10s"
 useLongPulling = true
 serverHost = "localhost:8080"
 webhookURL = "https://mymm.gq/syodo-bot"
+longPullingTimeout = 4
+
+[app]
 webAppURL = "https://mymm.gq/syodo"
+
+[app.prices]
+regularDelivery = 65000
+selfPickup = 0

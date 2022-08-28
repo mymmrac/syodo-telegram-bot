@@ -29,6 +29,8 @@ func (t TextData) Text(key string) string {
 	return t.Temp(key, nil)
 }
 
+const priceMultiplier = 100.0
+
 // LoadTextData loads text templates from specified file
 func LoadTextData(filename string) (TextData, error) {
 	var textValues map[string]string
@@ -42,7 +44,7 @@ func LoadTextData(filename string) (TextData, error) {
 
 	fm := template.FuncMap{
 		"toPrice": func(amount int) string {
-			return fmt.Sprintf("%.2f", float64(amount)/100.0)
+			return fmt.Sprintf("%.2f", float64(amount)/priceMultiplier)
 		},
 	}
 

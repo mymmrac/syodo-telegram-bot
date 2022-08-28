@@ -19,6 +19,7 @@ output:
 linters:
     enable-all: true
     disable:
+        - deadcode # Finds unused code
         - execinquery # execinquery is a linter about query string checker in Query function which reads your Go src files and warning it finds
         - exhaustivestruct # Checks if all struct's fields are initialized
         - exhaustruct # Checks if all structure fields are initialized
@@ -28,6 +29,7 @@ linters:
         - godot # Check if comments end in a period
         - goerr113 # Golang linter to check the errors handling expressions
         - golint # Golint differs from gofmt. Gofmt reformats Go source code, whereas golint prints out style mistakes
+        - ifshort # Checks that your code uses short syntax for if-statements whenever possible
         - interfacer # Linter that suggests narrower interface types
         - ireturn # Accept Interfaces, Return Concrete Types
         - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
@@ -39,6 +41,7 @@ linters:
         - scopelint # Scopelint checks for unpinned variables in go programs
         - tagliatelle # Checks the struct tags.
         - testpackage # linter that makes you use a separate _test package
+        - varcheck # Finds unused global variables and constants
         - varnamelen # checks that the length of a variable's name matches its scope
         - wrapcheck # Checks that errors returned from external packages are wrapped
         - wsl # Whitespace Linter - Forces you to use empty lines!
@@ -163,6 +166,9 @@ issues:
         -   linters:
                 - stylecheck
             text: "ST1000:"
+        -   linters:
+              - revive
+            text: "package-comments"
 
     # Independently of option `exclude` we use default exclude patterns,
     # it can be disabled by this option. To list all

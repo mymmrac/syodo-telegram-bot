@@ -2,6 +2,7 @@ package main
 
 import "time"
 
+// OrderProduct represents a single item in order
 type OrderProduct struct {
 	ID         string `json:"id"`
 	Title      string `json:"title"`
@@ -10,6 +11,7 @@ type OrderProduct struct {
 	CategoryID string `json:"categoryID"`
 }
 
+// OrderRequest represents order info sent by user
 type OrderRequest struct {
 	AppData              string         `json:"appData"`
 	Products             []OrderProduct `json:"products"`
@@ -20,6 +22,7 @@ type OrderRequest struct {
 	Comment              string         `json:"comment"`
 }
 
+// OrderDetails represents full order info
 type OrderDetails struct {
 	Request   OrderRequest `json:"request"`
 	CreatedAt time.Time    `json:"createdAt"`

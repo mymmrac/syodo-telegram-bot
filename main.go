@@ -72,7 +72,7 @@ func start(cfg *config.Config, log *logger.Log) {
 		log.Fatalf("Read text data file: %s", err)
 	}
 
-	bot, err := telego.NewBot(cfg.Settings.BotToken, telego.WithLogger(log), telego.WithHealthCheck())
+	bot, err := telego.NewBot(cfg.App.BotToken, telego.WithLogger(log), telego.WithHealthCheck())
 	if err != nil {
 		log.Fatalf("Create bot: %s", err)
 	}
@@ -91,7 +91,7 @@ func start(cfg *config.Config, log *logger.Log) {
 		}
 
 		updates, err = bot.UpdatesViaLongPulling(&telego.GetUpdatesParams{
-			Timeout: 4,
+			Timeout: cfg.Settings.LongPullingTimeout,
 		}, telego.WithLongPullingUpdateInterval(0))
 	} else {
 		err = bot.SetWebhook(&telego.SetWebhookParams{
