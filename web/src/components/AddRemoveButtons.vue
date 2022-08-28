@@ -1,12 +1,12 @@
 <template>
-  <transition-group tag="div" name="m-buttons-fade" class="mt-2 relative">
-    <button v-if="amount === 0" class="w-full m-btn" @click="add">Додати</button>
+  <transition-group tag="div" name="m-buttons-fade" class="relative">
+    <button v-if="amount === 0" :class="fixedSize ? 'w-24' : 'w-full'" class="m-btn" @click="add">Додати</button>
     <div v-else class="flex justify-around items-center">
-      <button class="w-full m-btn" @click="removeInternal">-</button>
+      <button :class="fixedSize ? 'w-8' : 'w-full'" class="m-btn" @click="removeInternal">-</button>
       <transition tag="template" name="m-text-fade" mode="out-in">
-        <p :key="amount" class="px-3 transition duration-200">{{ amount }}</p>
+        <p :key="amount" class="text-center w-8 transition duration-200">{{ amount }}</p>
       </transition>
-      <button class="w-full m-btn" @click="addInternal">+</button>
+      <button :class="fixedSize ? 'w-8' : 'w-full'" class="m-btn" @click="addInternal">+</button>
     </div>
   </transition-group>
 </template>
@@ -18,6 +18,7 @@ const props = defineProps<{
   amount: number
   add: (payload: MouseEvent) => void
   remove: (payload: MouseEvent) => void
+  fixedSize?: boolean
 }>()
 
 const tg: TelegramWebApps.WebApp = window.Telegram.WebApp

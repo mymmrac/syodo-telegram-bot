@@ -8,7 +8,7 @@
                  class="rounded">
           </div>
           <div class="flex-1 truncate" :title="orderProduct.product.title">{{ orderProduct.product.title }}</div>
-          <add-remove-buttons class="w-24 mt-0" :amount="orderProduct.amount" :add="() => addProduct(orderProduct)"
+          <add-remove-buttons fixed-size :amount="orderProduct.amount" :add="() => addProduct(orderProduct)"
                               :remove="() => removeProduct(orderProduct)"/>
         </div>
       </div>
@@ -26,12 +26,12 @@
       </label>
       <div class="flex justify-between gap-2">
         <div class="flex-1">Кількість приборів</div>
-        <add-remove-buttons class="w-24 mt-0" :amount="order.cutleryCount" :add="() => { order.cutleryCount++ }"
+        <add-remove-buttons fixed-size :amount="order.cutleryCount" :add="() => { order.cutleryCount++ }"
                             :remove="() => { order.cutleryCount-- }"/>
       </div>
       <div class="flex justify-between gap-2">
         <div class="flex-1">Кількість навчальних приборів</div>
-        <add-remove-buttons class="w-24 mt-0" :amount="order.trainingCutleryCount"
+        <add-remove-buttons fixed-size :amount="order.trainingCutleryCount"
                             :add="() => { order.trainingCutleryCount++ }"
                             :remove="() => { order.trainingCutleryCount-- }"/>
       </div>
