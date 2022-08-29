@@ -77,7 +77,7 @@ func (h *Handler) RegisterHandlers() {
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
 	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
 	h.bh.HandleShippingQuery(h.shipping)
-	h.bh.HandlePreCheckoutQuery(h.preCheckout) // TODO: Check if it does not for second time in first failed
+	h.bh.HandlePreCheckoutQuery(h.preCheckout)
 	h.bh.HandleMessage(h.successPayment, th.SuccessPayment())
 
 	h.rtr.POST("/order", func(ctx *fasthttp.RequestCtx) {
@@ -127,8 +127,11 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 }
 
 func (h *Handler) storeOrder(order OrderRequest) string {
-	//nolint:gosec
-	orderKey := fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
+	var orderKey string
+	for orderKey == "" || h.orderStore.Has(orderKey) {
+		//nolint:gosec
+		orderKey = fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
+	}
 
 	memkey.Set(h.orderStore, orderKey, OrderDetails{
 		Request:   order,
