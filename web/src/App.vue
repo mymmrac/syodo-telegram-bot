@@ -27,17 +27,17 @@
 </template>
 
 <script setup lang="ts">
-import ProductList from "@/components/ProductList.vue"
-import CategoryList from "@/components/CategoryList.vue"
-import Checkout from "@/components/Checkout.vue"
 import GoToTopButton from "@/components/GoToTopButton.vue"
+import CategoryList from "@/components/CategoryList.vue"
+import ProductList from "@/components/ProductList.vue"
+import Checkout from "@/components/Checkout.vue"
 
 import { TelegramWebApps } from "telegram-bots-webapps-types"
 import { onMounted, Ref, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
 
-import { priceToText, Products } from "@/types"
 import { scrollToTop, showError, tgVersionSupported } from "@/utils"
+import { priceToText, Products } from "@/types"
 import { useGlobalStore } from "@/store"
 import syodoAPI from "@/syodo-api"
 import botAPI from "@/bot-api"
