@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/fasthttp/router"
@@ -32,11 +31,12 @@ type Handler struct {
 	rtr        *router.Router
 	data       TextData
 	orderStore *memkey.Store[string]
+	delivery   *DeliveryStrategy
 }
 
 // NewHandler creates new Handler
 func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.BotHandler, rtr *router.Router,
-	textData TextData,
+	textData TextData, delivery *DeliveryStrategy,
 ) *Handler {
 	return &Handler{
 		cfg:        cfg,
@@ -46,6 +46,7 @@ func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.B
 		rtr:        rtr,
 		data:       textData,
 		orderStore: &memkey.Store[string]{},
+		delivery:   delivery,
 	}
 }
 
@@ -84,75 +85,6 @@ func (h *Handler) RegisterHandlers() {
 		h.log.Infof("Received order request: `%s`", string(ctx.PostBody()))
 		h.orderHandler(ctx)
 	})
-}
-
-func (h *Handler) startCmd(bot *telego.Bot, message telego.Message) {
-	chatID := message.Chat.ID
-	_, err := bot.SendMessage(
-		tu.Message(tu.ID(chatID), h.data.Temp("start", message)).
-			WithParseMode(telego.ModeHTML).
-			WithReplyMarkup(tu.InlineKeyboard(
-				tu.InlineKeyboardRow(
-					tu.InlineKeyboardButton(h.data.Text("menuButton")).
-						WithWebApp(&telego.WebAppInfo{URL: h.cfg.App.WebAppURL}),
-				),
-			)),
-	)
-	if err != nil {
-		h.log.Errorf("Send start message: %s", err)
-	}
-}
-
-func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
-	chatID := message.Chat.ID
-	_, err := bot.SendMessage(
-		tu.Message(tu.ID(chatID), h.data.Temp("help", message)).
-			WithParseMode(telego.ModeHTML).
-			WithReplyMarkup(tu.InlineKeyboard(
-				tu.InlineKeyboardRow(
-					tu.InlineKeyboardButton(h.data.Text("siteButtonText")).
-						WithURL(h.data.Text("siteURL")),
-				),
-				tu.InlineKeyboardRow(
-					tu.InlineKeyboardButton(h.data.Text("instagramButtonText")).
-						WithURL(h.data.Text("instagramURL")),
-					tu.InlineKeyboardButton(h.data.Text("facebookButtonText")).
-						WithURL(h.data.Text("facebookURL")),
-				),
-			)),
-	)
-	if err != nil {
-		h.log.Errorf("Send help message: %s", err)
-	}
-}
-
-func (h *Handler) storeOrder(order OrderRequest) string {
-	var orderKey string
-	for orderKey == "" || h.orderStore.Has(orderKey) {
-		//nolint:gosec
-		orderKey = fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
-	}
-
-	memkey.Set(h.orderStore, orderKey, OrderDetails{
-		Request:   order,
-		CreatedAt: time.Now().UTC(),
-	})
-
-	return orderKey
-}
-
-func (h *Handler) getOrder(key string) (OrderDetails, bool) {
-	return memkey.Get[OrderDetails](h.orderStore, key)
-}
-
-func (h *Handler) invalidateOldOrders() {
-	ttlTime := time.Now().UTC().Add(-orderTTL)
-
-	for _, e := range memkey.Entries[OrderDetails](h.orderStore) {
-		if ttlTime.After(e.Value.CreatedAt) {
-			h.orderStore.Delete(e.Key)
-		}
-	}
 }
 
 func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
@@ -245,14 +177,31 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 		return
 	}
 
-	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true,
-		tu.ShippingOption("shipping_regular", "Доставка курєром",
-			tu.LabeledPrice("🛵 Доставка звичайна", h.cfg.App.Prices.RegularDelivery),
-		),
-		tu.ShippingOption("self_pickup", "Самовивіз",
-			tu.LabeledPrice("👋 Самовивіз", h.cfg.App.Prices.SelfPickup),
-		),
+	var options []telego.ShippingOption
+	zone := h.delivery.CalculateZone(query.ShippingAddress)
+
+	switch zone {
+	case ZoneGreen:
+		options = append(options, tu.ShippingOption(string(ZoneGreen), "Доставка курєром",
+			tu.LabeledPrice("🛵 Доставка у зелену зону", h.cfg.App.Prices.RegularDelivery),
+		))
+	case ZoneYellow:
+		options = append(options, tu.ShippingOption(string(ZoneYellow), "Доставка курєром",
+			tu.LabeledPrice("🛵 Доставка у жовту зону", h.cfg.App.Prices.RegularDelivery),
+		))
+	case ZoneRed:
+		options = append(options, tu.ShippingOption(string(ZoneRed), "Доставка курєром",
+			tu.LabeledPrice("🛵 Доставка у червону зону", h.cfg.App.Prices.RegularDelivery),
+		))
+	default:
+		// No shipping option
+	}
+
+	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
+		tu.LabeledPrice("👋 Самовивіз", h.cfg.App.Prices.SelfPickup),
 	))
+
+	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
 	if err != nil {
 		h.log.Errorf("Answer shipping: %s", err)
 		return
@@ -260,22 +209,29 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 }
 
 func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
-	_, ok := h.getOrder(query.InvoicePayload)
-
+	_, ok := DeliveryMethodIDs[query.ShippingOptionID]
 	if !ok {
-		err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, false).
-			WithErrorMessage(h.data.Text("orderNotFoundError")))
-		if err != nil {
-			h.log.Errorf("Answer pre checkout: %s", err)
-			return
-		}
+		h.failPreCheckout(query.ID, h.data.Text("orderDeliveryError"))
+		return
+	}
 
+	_, ok = h.getOrder(query.InvoicePayload)
+	if !ok {
+		h.failPreCheckout(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
 
 	err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, true))
 	if err != nil {
 		h.log.Errorf("Answer pre checkout: %s", err)
+		return
+	}
+}
+
+func (h *Handler) failPreCheckout(queryID, failureReason string) {
+	err := h.bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(queryID, false).WithErrorMessage(failureReason))
+	if err != nil {
+		h.log.Errorf("Answer pre checkout (failure): %s", err)
 		return
 	}
 }

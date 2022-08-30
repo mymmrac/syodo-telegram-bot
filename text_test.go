@@ -23,6 +23,7 @@ func TestTextData(t *testing.T) {
 		"facebookURL",
 		"menuButton",
 		"orderNotFoundError",
+		"orderDeliveryError",
 		"orderDescription",
 	}
 

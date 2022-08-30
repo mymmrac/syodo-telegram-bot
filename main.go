@@ -76,6 +76,11 @@ func start(cfg *config.Config, log *logger.Log) {
 		log.Fatalf("Read text data file: %s", err)
 	}
 
+	delivery, err := NewDeliveryStrategy(cfg, log)
+	if err != nil {
+		log.Fatalf("Init delivery strategy: %s", err)
+	}
+
 	bot, err := telego.NewBot(cfg.App.BotToken, telego.WithLogger(log), telego.WithHealthCheck())
 	if err != nil {
 		log.Fatalf("Create bot: %s", err)
@@ -118,7 +123,7 @@ func start(cfg *config.Config, log *logger.Log) {
 	}
 	// ==== Dependencies Setup End ====
 
-	handler := NewHandler(cfg, log, bot, bh, rtr, textData)
+	handler := NewHandler(cfg, log, bot, bh, rtr, textData, delivery)
 	handler.RegisterHandlers()
 
 	// ==== Starting / Stopping ====

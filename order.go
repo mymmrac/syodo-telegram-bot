@@ -1,6 +1,12 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/mymmrac/memkey"
+)
 
 // OrderProduct represents a single item in order
 type OrderProduct struct {
@@ -26,4 +32,33 @@ type OrderRequest struct {
 type OrderDetails struct {
 	Request   OrderRequest `json:"request"`
 	CreatedAt time.Time    `json:"createdAt"`
+}
+
+func (h *Handler) storeOrder(order OrderRequest) string {
+	var orderKey string
+	for orderKey == "" || h.orderStore.Has(orderKey) {
+		//nolint:gosec
+		orderKey = fmt.Sprintf("%06d", rand.Intn(orderKeyBound))
+	}
+
+	memkey.Set(h.orderStore, orderKey, OrderDetails{
+		Request:   order,
+		CreatedAt: time.Now().UTC(),
+	})
+
+	return orderKey
+}
+
+func (h *Handler) getOrder(key string) (OrderDetails, bool) {
+	return memkey.Get[OrderDetails](h.orderStore, key)
+}
+
+func (h *Handler) invalidateOldOrders() {
+	ttlTime := time.Now().UTC().Add(-orderTTL)
+
+	for _, e := range memkey.Entries[OrderDetails](h.orderStore) {
+		if ttlTime.After(e.Value.CreatedAt) {
+			h.orderStore.Delete(e.Key)
+		}
+	}
 }

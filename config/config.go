@@ -11,6 +11,13 @@ import (
 	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
+//nolint:gosec
+const (
+	botTokenEnv        = "BOT_TOKEN"
+	providerTokenEnv   = "PROVIDER_TOKEN"
+	googleMapsTokenEnv = "GOOGLE_MAPS_TOKEN"
+)
+
 // LoadConfig loads config from config file and environment variables
 func LoadConfig(filename string) (*Config, error) {
 	cfg := &Config{}
@@ -22,16 +29,19 @@ func LoadConfig(filename string) (*Config, error) {
 
 	var ok bool
 
-	const botTokenEnv = "BOT_TOKEN"
 	cfg.App.BotToken, ok = os.LookupEnv(botTokenEnv)
 	if !ok {
 		return nil, fmt.Errorf("no %q environment variable", botTokenEnv)
 	}
 
-	const providerTokenEnv = "PROVIDER_TOKEN"
 	cfg.App.ProviderToken, ok = os.LookupEnv(providerTokenEnv)
 	if !ok {
 		return nil, fmt.Errorf("no %q environment variable", providerTokenEnv)
+	}
+
+	cfg.App.GoogleMapsToken, ok = os.LookupEnv(googleMapsTokenEnv)
+	if !ok {
+		return nil, fmt.Errorf("no %q environment variable", googleMapsTokenEnv)
 	}
 
 	validate := validator.New()
@@ -67,10 +77,11 @@ type Settings struct {
 
 // App represents business logic settings
 type App struct {
-	BotToken      string `validate:"required"`
-	ProviderToken string `validate:"required"`
-	WebAppURL     string `validate:"url"`
-	Prices        Prices
+	BotToken        string `validate:"required"`
+	ProviderToken   string `validate:"required"`
+	GoogleMapsToken string `validate:"required"`
+	WebAppURL       string `validate:"url"`
+	Prices          Prices
 }
 
 // Prices represents prices for different services
