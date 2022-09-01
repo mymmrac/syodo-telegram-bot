@@ -13,7 +13,7 @@ import (
 )
 
 // DeliveryZone represents delivery zones
-type DeliveryZone string
+type DeliveryZone = string
 
 // Defined delivery zones
 const (
@@ -28,10 +28,10 @@ const SelfPickup = "self_pickup"
 
 // DeliveryMethodIDs lists all delivery methods
 var DeliveryMethodIDs = map[string]struct{}{
-	string(ZoneGreen):  {},
-	string(ZoneYellow): {},
-	string(ZoneRed):    {},
-	SelfPickup:         {},
+	ZoneGreen:  {},
+	ZoneYellow: {},
+	ZoneRed:    {},
+	SelfPickup: {},
 }
 
 // DeliveryStrategy represents model of calculation delivery zones by addresses
@@ -45,7 +45,7 @@ type DeliveryStrategy struct {
 
 // NewDeliveryStrategy creates new DeliveryStrategy
 func NewDeliveryStrategy(cfg *config.Config, log logger.Logger) (*DeliveryStrategy, error) {
-	client, err := maps.NewClient(maps.WithAPIKey(cfg.App.GoogleMapsToken))
+	client, err := maps.NewClient(maps.WithAPIKey(cfg.App.GoogleMapsAPIKey))
 	if err != nil {
 		return nil, fmt.Errorf("create maps client: %w", err)
 	}

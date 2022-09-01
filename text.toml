@@ -45,6 +45,9 @@ orderDeliveryError = "На жаль, ми не занємо як достави�
 # Description of the order
 orderDescription = "SYODŌ – доставка японської кухні, що поважає деталі!"
 
+# Error that is displayed if calculating shipping price failed
+calculateShippingPriceError = "На жаль, ми не змогли звизначити деталей доставки Вашого замовлення"
+
 # Success payment message, data: SuccessPayment
 successPayment = """
 Дякуємо за оплату!

@@ -13,9 +13,10 @@ import (
 
 //nolint:gosec
 const (
-	botTokenEnv        = "BOT_TOKEN"
-	providerTokenEnv   = "PROVIDER_TOKEN"
-	googleMapsTokenEnv = "GOOGLE_MAPS_TOKEN"
+	botTokenEnv         = "BOT_TOKEN"
+	providerTokenEnv    = "PROVIDER_TOKEN"
+	googleMapsAPIKeyEnv = "GOOGLE_MAPS_API_KEY"
+	syodoAPIKeyEnv      = "SYODO_API_KEY"
 )
 
 // LoadConfig loads config from config file and environment variables
@@ -39,9 +40,14 @@ func LoadConfig(filename string) (*Config, error) {
 		return nil, fmt.Errorf("no %q environment variable", providerTokenEnv)
 	}
 
-	cfg.App.GoogleMapsToken, ok = os.LookupEnv(googleMapsTokenEnv)
+	cfg.App.GoogleMapsAPIKey, ok = os.LookupEnv(googleMapsAPIKeyEnv)
 	if !ok {
-		return nil, fmt.Errorf("no %q environment variable", googleMapsTokenEnv)
+		return nil, fmt.Errorf("no %q environment variable", googleMapsAPIKeyEnv)
+	}
+
+	cfg.App.SyodoAPIKey, ok = os.LookupEnv(syodoAPIKeyEnv)
+	if !ok {
+		return nil, fmt.Errorf("no %q environment variable", syodoAPIKeyEnv)
 	}
 
 	validate := validator.New()
@@ -77,17 +83,11 @@ type Settings struct {
 
 // App represents business logic settings
 type App struct {
-	BotToken        string `validate:"required"`
-	ProviderToken   string `validate:"required"`
-	GoogleMapsToken string `validate:"required"`
-	WebAppURL       string `validate:"url"`
-	Prices          Prices
-}
-
-// Prices represents prices for different services
-type Prices struct {
-	RegularDelivery int `validate:"-"`
-	SelfPickup      int `validate:"-"`
+	BotToken         string `validate:"required"`
+	ProviderToken    string `validate:"required"`
+	GoogleMapsAPIKey string `validate:"required"`
+	SyodoAPIKey      string `validate:"required"`
+	WebAppURL        string `validate:"url"`
 }
 
 const (

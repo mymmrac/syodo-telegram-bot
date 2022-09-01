@@ -32,6 +32,7 @@ type Handler struct {
 	data       TextData
 	orderStore *memkey.Store[string]
 	delivery   *DeliveryStrategy
+	syodo      *SyodoService
 }
 
 // NewHandler creates new Handler
@@ -47,6 +48,7 @@ func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.B
 		data:       textData,
 		orderStore: &memkey.Store[string]{},
 		delivery:   delivery,
+		syodo:      NewSyodoService(cfg),
 	}
 }
 
@@ -164,46 +166,65 @@ func emojiByCategoryID(id string) string {
 }
 
 func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
-	_, ok := h.getOrder(query.InvoicePayload)
-
+	order, ok := h.getOrder(query.InvoicePayload)
 	if !ok {
-		err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, false).
-			WithErrorMessage(h.data.Text("orderNotFoundError")))
-		if err != nil {
-			h.log.Errorf("Answer shipping: %s", err)
-			return
-		}
-
+		h.failShipping(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
 
 	var options []telego.ShippingOption
+
+	// ==== Delivery ====
 	zone := h.delivery.CalculateZone(query.ShippingAddress)
 
+	price, err := h.syodo.CalculatePrice(order, zone, false)
+	if err != nil {
+		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
+		return
+	}
+
+	var label string
 	switch zone {
 	case ZoneGreen:
-		options = append(options, tu.ShippingOption(string(ZoneGreen), "Доставка курєром",
-			tu.LabeledPrice("🛵 Доставка у зелену зону", h.cfg.App.Prices.RegularDelivery),
-		))
+		label = "🛵 Доставка у зелену зону"
 	case ZoneYellow:
-		options = append(options, tu.ShippingOption(string(ZoneYellow), "Доставка курєром",
-			tu.LabeledPrice("🛵 Доставка у жовту зону", h.cfg.App.Prices.RegularDelivery),
-		))
+		label = "🛵 Доставка у жовту зону"
 	case ZoneRed:
-		options = append(options, tu.ShippingOption(string(ZoneRed), "Доставка курєром",
-			tu.LabeledPrice("🛵 Доставка у червону зону", h.cfg.App.Prices.RegularDelivery),
-		))
+		label = "🛵 Доставка у червону зону"
 	default:
 		// No shipping option
 	}
 
-	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
-		tu.LabeledPrice("👋 Самовивіз", h.cfg.App.Prices.SelfPickup),
-	))
+	if zone != ZoneUnknown {
+		options = append(options, tu.ShippingOption(zone, "Доставка курєром",
+			tu.LabeledPrice(label, price),
+		))
+	}
+	// ==== Delivery END ====
 
-	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
+	// ==== Self Pickup ====
+	priceSelfPickup, err := h.syodo.CalculatePrice(order, "", true)
+	if err != nil {
+		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
+		return
+	}
+
+	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
+		tu.LabeledPrice("👋 Самовивіз", priceSelfPickup),
+	))
+	// ==== Self Pickup END ====
+
+	err = bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
 	if err != nil {
 		h.log.Errorf("Answer shipping: %s", err)
+		return
+	}
+}
+
+func (h *Handler) failShipping(queryID, failureReason string) {
+	err := h.bot.AnswerShippingQuery(tu.ShippingQuery(queryID, false).WithErrorMessage(failureReason))
+	if err != nil {
+		h.log.Errorf("Answer shipping (failure): %s", err)
 		return
 	}
 }

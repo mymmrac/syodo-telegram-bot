@@ -12,7 +12,3 @@ longPullingTimeout = 4
 
 [app]
 webAppURL = "https://mymm.gq/syodo"
-
-[app.prices]
-regularDelivery = 6500
-selfPickup = 0
