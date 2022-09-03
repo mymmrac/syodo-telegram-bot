@@ -86,9 +86,11 @@ func (s *DeliveryStrategy) CalculateZone(shipping telego.ShippingAddress) Delive
 	}
 
 	chosenResult := results[0]
-	s.log.Debugf("Calculate zone: chosen address for %+v was: %s", shipping, chosenResult.FormattedAddress)
-
 	location := chosenResult.Geometry.Location
+
+	s.log.Debugf("Calculate zone: chosen address for %+v was: location: %s, address: %s",
+		shipping, location.String(), chosenResult.FormattedAddress)
+
 	point := s2.PointFromLatLng(s2.LatLngFromDegrees(location.Lat, location.Lng))
 
 	if s.greenPolygon.ContainsPoint(point) {
