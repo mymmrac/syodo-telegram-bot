@@ -12,3 +12,4 @@ longPullingTimeout = 4
 
 [app]
 webAppURL = "https://mymm.gq/syodo"
+syodoAPIURL = "https://hjrc5e9go8.execute-api.eu-central-1.amazonaws.com/dev"

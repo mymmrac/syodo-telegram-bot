@@ -152,7 +152,7 @@ func emojiByCategoryID(id string) string {
 	switch id {
 	case "13": // Суші
 		return "🍣"
-	case "7", "8": // Роли, Сети
+	case "7", "8", "14": // Роли, Сети, Без лактози
 		return "🍱"
 	case "9": // Напої
 		return "🥤"
@@ -210,7 +210,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	}
 
 	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
-		tu.LabeledPrice("👋 Самовивіз", priceSelfPickup),
+		tu.LabeledPrice("👋 Самовивіз (-10%)", priceSelfPickup),
 	))
 	// ==== Self Pickup END ====
 

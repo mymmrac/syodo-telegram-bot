@@ -88,6 +88,7 @@ type App struct {
 	GoogleMapsAPIKey string `validate:"required"`
 	SyodoAPIKey      string `validate:"required"`
 	WebAppURL        string `validate:"url"`
+	SyodoAPIURL      string `validate:"url"`
 }
 
 const (
