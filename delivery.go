@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/golang/geo/s2"
 	"github.com/mymmrac/telego"
@@ -63,16 +64,16 @@ func NewDeliveryStrategy(cfg *config.Config, log logger.Logger) (*DeliveryStrate
 func (s *DeliveryStrategy) CalculateZone(shipping telego.ShippingAddress) DeliveryZone {
 	ctx := context.Background()
 	results, err := s.client.Geocode(ctx, &maps.GeocodingRequest{
-		Address:      "",
-		Components:   nil,
-		Bounds:       nil,
-		Region:       "",
-		LatLng:       nil,
-		ResultType:   nil,
-		LocationType: nil,
-		PlaceID:      "",
-		Language:     "",
-		Custom:       nil,
+		Components: map[maps.Component]string{
+			maps.ComponentCountry:            strings.ToLower(shipping.CountryCode),
+			maps.ComponentLocality:           shipping.City,
+			maps.ComponentAdministrativeArea: shipping.State,
+			maps.ComponentPostalCode:         shipping.PostCode,
+			maps.ComponentRoute:              strings.TrimSpace(shipping.StreetLine1 + " " + shipping.StreetLine2),
+		},
+		Bounds:   approximateBounds,
+		Region:   strings.ToLower(shipping.CountryCode),
+		Language: "uk",
 	})
 	if err != nil {
 		s.log.Errorf("Calculate zone: geocode for %+v, error: %s", shipping, err)
@@ -107,6 +108,18 @@ func constructPolygon(latLngPoints []s2.LatLng) *s2.Polygon {
 		points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(float64(p.Lat), float64(p.Lng)))
 	}
 	return s2.PolygonFromLoops([]*s2.Loop{s2.LoopFromPoints(points)})
+}
+
+//nolint:gomnd
+var approximateBounds = &maps.LatLngBounds{
+	NorthEast: maps.LatLng{
+		Lat: 50.061937,
+		Lng: 24.386862,
+	},
+	SouthWest: maps.LatLng{
+		Lat: 48.71841570388124,
+		Lng: 23.471838912294967,
+	},
 }
 
 //nolint:gomnd
