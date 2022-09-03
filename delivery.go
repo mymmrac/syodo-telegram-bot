@@ -102,12 +102,15 @@ func (s *DeliveryStrategy) CalculateZone(shipping telego.ShippingAddress) Delive
 	return ZoneRed
 }
 
-func constructPolygon(latLngPoints []s2.LatLng) *s2.Polygon {
+func constructPolygon(latLngPoints []maps.LatLng) *s2.Polygon {
 	points := make([]s2.Point, len(latLngPoints))
 	for i, p := range latLngPoints {
-		points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(float64(p.Lat), float64(p.Lng)))
+		points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(p.Lat, p.Lng))
 	}
-	return s2.PolygonFromLoops([]*s2.Loop{s2.LoopFromPoints(points)})
+
+	polygon := s2.PolygonFromLoops([]*s2.Loop{s2.LoopFromPoints(points)})
+	polygon.Invert()
+	return polygon
 }
 
 //nolint:gomnd
@@ -123,7 +126,7 @@ var approximateBounds = &maps.LatLngBounds{
 }
 
 //nolint:gomnd
-var greenAreaPoints = []s2.LatLng{
+var greenAreaPoints = []maps.LatLng{
 	{Lat: 49.778702, Lng: 23.980260},
 	{Lat: 49.779991, Lng: 23.976215},
 	{Lat: 49.781509, Lng: 23.976307},
@@ -151,7 +154,7 @@ var greenAreaPoints = []s2.LatLng{
 }
 
 //nolint:gomnd
-var yellowAreaPoints = []s2.LatLng{
+var yellowAreaPoints = []maps.LatLng{
 	{Lat: 49.778702, Lng: 23.980260},
 	{Lat: 49.779991, Lng: 23.976215},
 	{Lat: 49.781509, Lng: 23.976307},
