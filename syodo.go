@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/valyala/fasthttp"
 
@@ -31,6 +32,48 @@ func NewSyodoService(cfg *config.Config) *SyodoService {
 		cfg:    cfg,
 		client: &fasthttp.Client{},
 	}
+}
+
+func (s *SyodoService) call(path string, method string, data, result any) error {
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	apiURL, err := url.JoinPath(s.cfg.App.SyodoAPIURL, path)
+	if err != nil {
+		return fmt.Errorf("join path: %w", err)
+	}
+
+	req.SetRequestURI(apiURL)
+
+	req.Header.SetMethod(method)
+	req.Header.SetContentType(contentTypeJSON)
+	req.Header.Set(authHeader, s.cfg.App.SyodoAPIKey)
+
+	if data != nil {
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			return fmt.Errorf("encode data: %w", err)
+		}
+
+		req.SetBodyRaw(jsonData)
+	}
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := s.client.Do(req, resp); err != nil {
+		return fmt.Errorf("call syodo: %w", err)
+	}
+
+	if statusCode := resp.StatusCode(); statusCode != fasthttp.StatusOK {
+		return fmt.Errorf("call syodo bad status: %d", statusCode)
+	}
+
+	if err := json.Unmarshal(resp.Body(), result); err != nil {
+		return fmt.Errorf("decode result: %w", err)
+	}
+
+	return nil
 }
 
 type priceRequestOrder struct {
@@ -80,35 +123,9 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 		},
 	}
 
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(s.cfg.App.SyodoAPIURL + "/price")
-	req.Header.SetContentType(contentTypeJSON)
-	req.Header.SetMethod(fasthttp.MethodPost)
-	req.Header.Set(authHeader, s.cfg.App.SyodoAPIKey)
-
-	data, err := json.Marshal(priceReq)
-	if err != nil {
-		return 0, fmt.Errorf("encode body: %w", err)
-	}
-	req.SetBodyRaw(data)
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	err = s.client.Do(req, resp)
-	if err != nil {
-		return 0, fmt.Errorf("call syodo: %w", err)
-	}
-
-	if statusCode := resp.StatusCode(); statusCode != fasthttp.StatusOK {
-		return 0, fmt.Errorf("call syodo status: %d", statusCode)
-	}
-
 	var priceResp priceResponse
-	if err = json.Unmarshal(resp.Body(), &priceResp); err != nil {
-		return 0, fmt.Errorf("decode body: %w", err)
+	if err := s.call("/price", fasthttp.MethodPost, priceReq, &priceResp); err != nil {
+		return 0, fmt.Errorf("price API: %w", err)
 	}
 
 	return priceResp.Delivery - priceResp.Discount, nil

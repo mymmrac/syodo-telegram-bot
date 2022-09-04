@@ -68,7 +68,6 @@ func (s *DeliveryStrategy) CalculateZone(shipping telego.ShippingAddress) Delive
 			maps.ComponentCountry:            strings.ToLower(shipping.CountryCode),
 			maps.ComponentLocality:           shipping.City,
 			maps.ComponentAdministrativeArea: shipping.State,
-			maps.ComponentPostalCode:         shipping.PostCode,
 			maps.ComponentRoute:              strings.TrimSpace(shipping.StreetLine1 + " " + shipping.StreetLine2),
 		},
 		Bounds:   approximateBounds,
