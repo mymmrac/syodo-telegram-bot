@@ -4,7 +4,7 @@
       <img :src="getImage(product)" :alt="usedProduct.title" class="rounded">
     </div>
     <div>
-      <p>{{ usedProduct.title }}</p>
+      <p @click="showDetails = true">{{ usedProduct.title }}</p>
       <div class="flex justify-between">
         <p>{{ product.weight }}</p>
         <p>{{ getPrice(usedProduct) }}</p>
@@ -113,14 +113,6 @@ function remove() {
 </script>
 
 <style scoped lang="scss">
-.m-btn {
-  @apply py-1 px-2 rounded shadow;
-}
-
-.m-btn-no-padding {
-  @apply px-2 rounded shadow;
-}
-
 .m-card-fade {
   &-enter-active,
   &-leave-active {

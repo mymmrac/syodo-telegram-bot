@@ -89,10 +89,6 @@ function updateComment(e: Event) {
 </script>
 
 <style scoped lang="scss">
-.m-checkbox {
-  @apply form-checkbox rounded focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200;
-}
-
 .m-fade {
   &-enter-active,
   &-leave-active {

@@ -28,3 +28,15 @@ button, a, image, div {
 hr {
   @apply border-tg-hint;
 }
+
+.m-btn {
+  @apply py-1 px-2 rounded shadow;
+}
+
+.m-btn-no-padding {
+  @apply px-2 rounded shadow;
+}
+
+.m-checkbox {
+  @apply form-checkbox rounded focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200;
+}
