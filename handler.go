@@ -197,16 +197,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 			return
 		}
 
-		switch zone {
-		case ZoneGreen:
-			label = "🛵 Доставка у зелену зону"
-		case ZoneYellow:
-			label = "🛵 Доставка у жовту зону"
-		case ZoneRed:
-			label = "🛵 Доставка у червону зону"
-		default:
-			// No shipping option
-		}
+		label = labelByZone(zone)
 	}()
 
 	wg.Add(1)
@@ -236,6 +227,20 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	if err != nil {
 		h.log.Errorf("Answer shipping: %s", err)
 		return
+	}
+}
+
+func labelByZone(zone DeliveryZone) string {
+	switch zone {
+	case ZoneGreen:
+		return "🛵 Доставка у зелену зону"
+	case ZoneYellow:
+		return "🛵 Доставка у жовту зону"
+	case ZoneRed:
+		return "🛵 Доставка у червону зону"
+	default:
+		// No shipping option
+		return "<UNKNOWN>"
 	}
 }
 
