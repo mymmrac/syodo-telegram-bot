@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/fasthttp/router"
@@ -172,49 +173,66 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 		return
 	}
 
-	var options []telego.ShippingOption
+	var (
+		wg      sync.WaitGroup
+		options []telego.ShippingOption
 
-	// ==== Delivery ====
-	zone := h.delivery.CalculateZone(query.ShippingAddress)
+		zone             DeliveryZone
+		label            string
+		priceDelivery    int
+		priceDeliveryErr error
 
-	price, err := h.syodo.CalculatePrice(order, zone, false)
-	if err != nil {
+		priceSelfPickup    int
+		priceSelfPickupErr error
+	)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		zone = h.delivery.CalculateZone(query.ShippingAddress)
+
+		priceDelivery, priceDeliveryErr = h.syodo.CalculatePrice(order, zone, false)
+		if priceDeliveryErr != nil {
+			return
+		}
+
+		switch zone {
+		case ZoneGreen:
+			label = "🛵 Доставка у зелену зону"
+		case ZoneYellow:
+			label = "🛵 Доставка у жовту зону"
+		case ZoneRed:
+			label = "🛵 Доставка у червону зону"
+		default:
+			// No shipping option
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		priceSelfPickup, priceSelfPickupErr = h.syodo.CalculatePrice(order, "", true)
+	}()
+
+	wg.Wait()
+	if priceDeliveryErr != nil || priceSelfPickupErr != nil {
 		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
 		return
-	}
-
-	var label string
-	switch zone {
-	case ZoneGreen:
-		label = "🛵 Доставка у зелену зону"
-	case ZoneYellow:
-		label = "🛵 Доставка у жовту зону"
-	case ZoneRed:
-		label = "🛵 Доставка у червону зону"
-	default:
-		// No shipping option
 	}
 
 	if zone != ZoneUnknown {
 		options = append(options, tu.ShippingOption(zone, "Доставка курєром",
-			tu.LabeledPrice(label, price),
+			tu.LabeledPrice(label, priceDelivery),
 		))
-	}
-	// ==== Delivery END ====
-
-	// ==== Self Pickup ====
-	priceSelfPickup, err := h.syodo.CalculatePrice(order, "", true)
-	if err != nil {
-		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
-		return
 	}
 
 	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
 		tu.LabeledPrice("👋 Самовивіз (-10%)", priceSelfPickup),
 	))
-	// ==== Self Pickup END ====
 
-	err = bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
+	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
 	if err != nil {
 		h.log.Errorf("Answer shipping: %s", err)
 		return
