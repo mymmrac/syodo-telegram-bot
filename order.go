@@ -30,8 +30,10 @@ type OrderRequest struct {
 
 // OrderDetails represents full order info
 type OrderDetails struct {
-	Request   OrderRequest `json:"request"`
-	CreatedAt time.Time    `json:"createdAt"`
+	InternalOrderID string       `json:"internalOrderID"`
+	OrderID         string       `json:"orderID"`
+	Request         OrderRequest `json:"request"`
+	CreatedAt       time.Time    `json:"createdAt"`
 }
 
 func (h *Handler) storeOrder(order OrderRequest) string {
@@ -42,8 +44,9 @@ func (h *Handler) storeOrder(order OrderRequest) string {
 	}
 
 	memkey.Set(h.orderStore, orderKey, OrderDetails{
-		Request:   order,
-		CreatedAt: time.Now().UTC(),
+		InternalOrderID: orderKey,
+		Request:         order,
+		CreatedAt:       time.Now().UTC(),
 	})
 
 	return orderKey
@@ -51,6 +54,10 @@ func (h *Handler) storeOrder(order OrderRequest) string {
 
 func (h *Handler) getOrder(key string) (OrderDetails, bool) {
 	return memkey.Get[OrderDetails](h.orderStore, key)
+}
+
+func (h *Handler) updateOrder(order OrderDetails) {
+	memkey.Set(h.orderStore, order.InternalOrderID, order)
 }
 
 func (h *Handler) invalidateOldOrders() {

@@ -42,6 +42,9 @@ orderNotFoundError = "На жаль, ми не можемо знайти Ваш�
 # Error that is displayed if order was done with unexpected or empty delivery method
 orderDeliveryError = "На жаль, ми не занємо як доставити Ваше замовлення"
 
+# Error that is displayed if order was failed to checkout
+orderCheckoutError = "На жаль, ми не змогли оформити Ваше замовлення"
+
 # Description of the order
 orderDescription = "SYODŌ – доставка японської кухні, що поважає деталі!"
 

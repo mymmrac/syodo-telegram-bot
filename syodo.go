@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -129,4 +130,15 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 	}
 
 	return priceResp.Delivery - priceResp.Discount, nil
+}
+
+// Checkout registers order in Syodo services
+func (s *SyodoService) Checkout(order *OrderDetails) error {
+	if order == nil {
+		return errors.New("nil order checkout")
+	}
+
+	order.OrderID = "bla bla bla bla bla"
+
+	return nil
 }

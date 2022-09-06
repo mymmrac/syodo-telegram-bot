@@ -236,11 +236,19 @@ func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
 		return
 	}
 
-	_, ok = h.getOrder(query.InvoicePayload)
+	order, ok := h.getOrder(query.InvoicePayload)
 	if !ok {
 		h.failPreCheckout(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
+
+	if err := h.syodo.Checkout(&order); err != nil {
+		h.failPreCheckout(query.ID, h.data.Text("orderCheckoutError"))
+		return
+	}
+	h.log.Debugf("Order checkout: %+v", order)
+
+	h.updateOrder(order)
 
 	err := bot.AnswerPreCheckoutQuery(tu.PreCheckoutQuery(query.ID, true))
 	if err != nil {

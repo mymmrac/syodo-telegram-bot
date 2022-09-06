@@ -24,6 +24,7 @@ func TestTextData(t *testing.T) {
 		"menuButton",
 		"orderNotFoundError",
 		"orderDeliveryError",
+		"orderCheckoutError",
 		"orderDescription",
 		"calculateShippingPriceError",
 	}
