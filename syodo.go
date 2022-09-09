@@ -58,7 +58,8 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 	req.Header.Set(authHeader, s.cfg.App.SyodoAPIKey)
 
 	if data != nil {
-		jsonData, err := json.Marshal(data)
+		var jsonData []byte
+		jsonData, err = json.Marshal(data)
 		if err != nil {
 			return fmt.Errorf("encode data: %w", err)
 		}
@@ -69,7 +70,7 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
-	if err := s.client.Do(req, resp); err != nil {
+	if err = s.client.Do(req, resp); err != nil {
 		return fmt.Errorf("call syodo: %w", err)
 	}
 
@@ -77,7 +78,7 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 		return fmt.Errorf("call syodo bad status: %d", statusCode)
 	}
 
-	if err := json.Unmarshal(resp.Body(), result); err != nil {
+	if err = json.Unmarshal(resp.Body(), result); err != nil {
 		return fmt.Errorf("decode result: %w", err)
 	}
 
@@ -266,7 +267,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	}
 
 	var checkoutResp checkoutResponse
-	if err := s.call("/checkout", fasthttp.MethodPost, checkoutReq, &checkoutResp); err != nil {
+	if err := s.call("/payments/checkout", fasthttp.MethodPost, checkoutReq, &checkoutResp); err != nil {
 		return fmt.Errorf("checkout API: %w", err)
 	}
 

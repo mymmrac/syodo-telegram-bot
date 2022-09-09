@@ -95,12 +95,14 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 
 	var order OrderRequest
 	if err := json.Unmarshal(data, &order); err != nil {
+		h.log.Errorf("Unmarshal order request: %s", err)
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		return
 	}
 
 	_, err := tu.ValidateWebAppData(h.bot.Token(), order.AppData)
 	if err != nil {
+		h.log.Errorf("Invalid web app data: %q", order.AppData)
 		ctx.SetStatusCode(fasthttp.StatusForbidden)
 		return
 	}
@@ -140,6 +142,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		IsFlexible:                true,
 	})
 	if err != nil || link == nil || *link == "" {
+		h.log.Errorf("Create invoice link: %q, %s", link, err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
@@ -169,6 +172,7 @@ func emojiByCategoryID(id string) string {
 func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	order, ok := h.getOrder(query.InvoicePayload)
 	if !ok {
+		h.log.Errorf("Order not found: %s", query.InvoicePayload)
 		h.failShipping(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
@@ -209,6 +213,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 
 	wg.Wait()
 	if priceDeliveryErr != nil || priceSelfPickupErr != nil {
+		h.log.Errorf("Calculate price: %s, %s", priceDeliveryErr, priceSelfPickupErr)
 		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
 		return
 	}
@@ -255,18 +260,21 @@ func (h *Handler) failShipping(queryID, failureReason string) {
 func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
 	_, ok := DeliveryMethodIDs[query.ShippingOptionID]
 	if !ok {
+		h.log.Errorf("Unknown delivery method: %s", query.ShippingOptionID)
 		h.failPreCheckout(query.ID, h.data.Text("orderDeliveryError"))
 		return
 	}
 
 	info := query.OrderInfo
 	if info == nil || info.ShippingAddress == nil || info.Name == "" || info.PhoneNumber == "" {
+		h.log.Errorf("Bad order info: %+v", info)
 		h.failPreCheckout(query.ID, h.data.Text("orderInfoError"))
 		return
 	}
 
 	order, ok := h.getOrder(query.InvoicePayload)
 	if !ok {
+		h.log.Errorf("Order not found: %s", query.InvoicePayload)
 		h.failPreCheckout(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
@@ -275,6 +283,7 @@ func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
 	order.ShippingOptionID = query.ShippingOptionID
 
 	if err := h.syodo.Checkout(&order); err != nil {
+		h.log.Errorf("Checkout: %s", err)
 		h.failPreCheckout(query.ID, h.data.Text("orderCheckoutError"))
 		return
 	}
@@ -303,12 +312,13 @@ func (h *Handler) successPayment(bot *telego.Bot, message telego.Message) {
 
 	order, ok := h.getOrder(payment.InvoicePayload)
 	if !ok {
+		h.log.Errorf("Order not found: %s", payment.InvoicePayload)
+
 		_, err := bot.SendMessage(tu.Message(tu.ID(chatID), h.data.Text("successPaymentOrderNotFoundError")))
 		if err != nil {
 			h.log.Errorf("Send success payment error message: %s", err)
 			return
 		}
-
 		return
 	}
 
