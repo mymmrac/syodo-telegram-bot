@@ -28,6 +28,7 @@ func TestTextData(t *testing.T) {
 		"orderInfoError",
 		"orderDescription",
 		"calculateShippingPriceError",
+		"successPaymentOrderNotFoundError",
 	}
 
 	templates := []struct {
@@ -47,12 +48,8 @@ func TestTextData(t *testing.T) {
 			},
 		},
 		{
-			key: "successPayment",
-			data: telego.SuccessfulPayment{
-				OrderInfo: &telego.OrderInfo{
-					ShippingAddress: &telego.ShippingAddress{},
-				},
-			},
+			key:  "successPayment",
+			data: OrderDetails{},
 		},
 	}
 

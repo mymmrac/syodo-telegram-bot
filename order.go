@@ -36,6 +36,8 @@ type OrderDetails struct {
 	Request          OrderRequest      `json:"request"`
 	OrderInfo        *telego.OrderInfo `json:"orderInfo"`
 	ShippingOptionID string            `json:"shippingOptionID"`
+	OrderURL         string            `json:"orderURL"`
+	TotalAmount      int               `json:"totalAmount"`
 	CreatedAt        time.Time         `json:"createdAt"`
 }
 

@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/valyala/fasthttp"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
@@ -184,6 +185,34 @@ type checkoutRequest struct {
 	OrderDetails    []orderDTO         `json:"orderDetails"`
 }
 
+type checkoutResponse struct {
+	Data      string `json:"data"`
+	Signature string `json:"signature"`
+	OrderID   string `json:"orderId"`
+}
+
+type checkoutClaims struct {
+	jwt.RegisteredClaims
+
+	OrderID            string `json:"order_id"`
+	PublicKey          string `json:"public_key"`
+	Version            string `json:"version"`
+	Action             string `json:"action"`
+	Amount             int    `json:"amount"`
+	Currency           string `json:"currency"`
+	Description        string `json:"description"`
+	Language           string `json:"language"`
+	ProductDescription string `json:"product_description"`
+	ExpiredDate        string `json:"expired_date"`
+	ResultURL          string `json:"result_url"`
+	ServerURL          string `json:"server_url"`
+	SenderAddress      string `json:"sender_address"`
+	SenderCity         string `json:"sender_city"`
+	SenderFirstName    string `json:"sender_first_name"`
+	Info               string `json:"info"`
+	Alg                string `json:"alg"`
+}
+
 // Checkout registers order in Syodo services
 func (s *SyodoService) Checkout(order *OrderDetails) error {
 	if order == nil {
@@ -236,9 +265,22 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 		OrderDetails: requestOrder,
 	}
 
-	if err := s.call("/checkout", fasthttp.MethodPost, checkoutReq, nil); err != nil {
+	var checkoutResp checkoutResponse
+	if err := s.call("/checkout", fasthttp.MethodPost, checkoutReq, &checkoutResp); err != nil {
 		return fmt.Errorf("checkout API: %w", err)
 	}
+
+	var checkout checkoutClaims
+	_, err := jwt.ParseWithClaims(checkoutResp.Data, &checkout, func(token *jwt.Token) (interface{}, error) {
+		return []byte(checkoutResp.Signature), nil
+	})
+	if err != nil {
+		return fmt.Errorf("checkout API: validate JWT: %w", err)
+	}
+
+	order.ExternalOrderID = checkout.OrderID
+	order.OrderURL = checkout.ResultURL
+	order.TotalAmount = checkout.Amount
 
 	return nil
 }

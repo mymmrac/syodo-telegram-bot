@@ -54,10 +54,18 @@ orderDescription = "SYODŌ – доставка японської кухні, �
 # Error that is displayed if calculating shipping price failed
 calculateShippingPriceError = "На жаль, ми не змогли звизначити деталей доставки Вашого замовлення"
 
-# Success payment message, data: SuccessPayment
+# Success payment message, data: OrderDerails
 successPayment = """
 Дякуємо за оплату!
-Замовлення #{{ .InvoicePayload }}
+Замовлення #{{ .OrderID }}
 
 Сума: {{ toPrice  .TotalAmount }}грн
+Переглянути замовлення: {{ .OrderURL }}
+"""
+
+# Error that is displayed if order was not found after success payment
+successPaymentOrderNotFoundError = """
+На жаль, ми не можемо знайти Ваше замовлення
+
+Звяжіться з адміністрацією за контактами зазначиними тут /help
 """
