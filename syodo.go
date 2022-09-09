@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/valyala/fasthttp"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
@@ -192,9 +192,7 @@ type checkoutResponse struct {
 	OrderID   string `json:"orderId"`
 }
 
-type checkoutClaims struct {
-	jwt.RegisteredClaims
-
+type checkoutDTO struct {
 	OrderID            string `json:"order_id"`
 	PublicKey          string `json:"public_key"`
 	Version            string `json:"version"`
@@ -271,12 +269,14 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 		return fmt.Errorf("checkout API: %w", err)
 	}
 
-	var checkout checkoutClaims
-	_, err := jwt.ParseWithClaims(checkoutResp.Data, &checkout, func(token *jwt.Token) (interface{}, error) {
-		return []byte(checkoutResp.Signature), nil
-	})
+	data, err := base64.StdEncoding.DecodeString(checkoutResp.Data)
 	if err != nil {
-		return fmt.Errorf("checkout API: validate JWT: %w", err)
+		return fmt.Errorf("decode data: %w", err)
+	}
+
+	var checkout checkoutDTO
+	if err = json.Unmarshal(data, &checkout); err != nil {
+		return fmt.Errorf("unmarshal data: %w", err)
 	}
 
 	order.ExternalOrderID = checkout.OrderID
