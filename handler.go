@@ -322,7 +322,8 @@ func (h *Handler) successPayment(bot *telego.Bot, message telego.Message) {
 		return
 	}
 
-	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), h.data.Temp("successPayment", order)))
+	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), h.data.Temp("successPayment", order)).
+		WithParseMode(telego.ModeHTML))
 	if err != nil {
 		h.log.Errorf("Send success payment message: %s", err)
 		return

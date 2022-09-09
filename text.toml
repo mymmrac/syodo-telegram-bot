@@ -59,8 +59,8 @@ successPayment = """
 Дякуємо за оплату!
 Замовлення #{{ .OrderID }}
 
-Сума: {{ toPrice  .TotalAmount }}грн
-Переглянути замовлення: {{ .OrderURL }}
+Сума: {{ printf "%.2f" .TotalAmount }}грн
+Переглянути замовлення можна <a href="{{ .OrderURL }}">тут</a>
 """
 
 # Error that is displayed if order was not found after success payment

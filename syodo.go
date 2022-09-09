@@ -193,23 +193,23 @@ type checkoutResponse struct {
 }
 
 type checkoutDTO struct {
-	OrderID            string `json:"order_id"`
-	PublicKey          string `json:"public_key"`
-	Version            string `json:"version"`
-	Action             string `json:"action"`
-	Amount             int    `json:"amount"`
-	Currency           string `json:"currency"`
-	Description        string `json:"description"`
-	Language           string `json:"language"`
-	ProductDescription string `json:"product_description"`
-	ExpiredDate        string `json:"expired_date"`
-	ResultURL          string `json:"result_url"`
-	ServerURL          string `json:"server_url"`
-	SenderAddress      string `json:"sender_address"`
-	SenderCity         string `json:"sender_city"`
-	SenderFirstName    string `json:"sender_first_name"`
-	Info               string `json:"info"`
-	Alg                string `json:"alg"`
+	OrderID            string  `json:"order_id"`
+	PublicKey          string  `json:"public_key"`
+	Version            string  `json:"version"`
+	Action             string  `json:"action"`
+	Amount             float64 `json:"amount"`
+	Currency           string  `json:"currency"`
+	Description        string  `json:"description"`
+	Language           string  `json:"language"`
+	ProductDescription string  `json:"product_description"`
+	ExpiredDate        string  `json:"expired_date"`
+	ResultURL          string  `json:"result_url"`
+	ServerURL          string  `json:"server_url"`
+	SenderAddress      string  `json:"sender_address"`
+	SenderCity         string  `json:"sender_city"`
+	SenderFirstName    string  `json:"sender_first_name"`
+	Info               string  `json:"info"`
+	Alg                string  `json:"alg"`
 }
 
 // Checkout registers order in Syodo services
