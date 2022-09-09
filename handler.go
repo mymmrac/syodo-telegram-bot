@@ -259,11 +259,20 @@ func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
 		return
 	}
 
+	info := query.OrderInfo
+	if info == nil || info.ShippingAddress == nil || info.Name == "" || info.PhoneNumber == "" {
+		h.failPreCheckout(query.ID, h.data.Text("orderInfoError"))
+		return
+	}
+
 	order, ok := h.getOrder(query.InvoicePayload)
 	if !ok {
 		h.failPreCheckout(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
+
+	order.OrderInfo = info
+	order.ShippingOptionID = query.ShippingOptionID
 
 	if err := h.syodo.Checkout(&order); err != nil {
 		h.failPreCheckout(query.ID, h.data.Text("orderCheckoutError"))

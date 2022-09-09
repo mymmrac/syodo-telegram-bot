@@ -25,6 +25,7 @@ func TestTextData(t *testing.T) {
 		"orderNotFoundError",
 		"orderDeliveryError",
 		"orderCheckoutError",
+		"orderInfoError",
 		"orderDescription",
 		"calculateShippingPriceError",
 	}

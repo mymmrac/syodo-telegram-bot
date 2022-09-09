@@ -45,6 +45,9 @@ orderDeliveryError = "На жаль, ми не занємо як достави�
 # Error that is displayed if order was failed to checkout
 orderCheckoutError = "На жаль, ми не змогли оформити Ваше замовлення"
 
+# Error that is displayed if order is missing some info
+orderInfoError = "На жаль, ми не змогли отримати всю інформацію про Ваше замовлення"
+
 # Description of the order
 orderDescription = "SYODŌ – доставка японської кухні, що поважає деталі!"
 

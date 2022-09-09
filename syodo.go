@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/valyala/fasthttp"
 
@@ -23,15 +24,20 @@ const (
 
 // SyodoService represents a type to interact with Syodo API
 type SyodoService struct {
-	cfg    *config.Config
-	client *fasthttp.Client
+	cfg      *config.Config
+	client   *fasthttp.Client
+	timezone *time.Location
 }
 
 // NewSyodoService creates new SyodoService
 func NewSyodoService(cfg *config.Config) *SyodoService {
+	loc, err := time.LoadLocation("Europe/Kiev")
+	assert(err == nil, fmt.Errorf("load timezone: %w", err))
+
 	return &SyodoService{
-		cfg:    cfg,
-		client: &fasthttp.Client{},
+		cfg:      cfg,
+		client:   &fasthttp.Client{},
+		timezone: loc,
 	}
 }
 
@@ -77,21 +83,21 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 	return nil
 }
 
-type priceRequestOrder struct {
+type orderDTO struct {
 	ID         string `json:"id"`
 	CategoryID string `json:"category_id"`
 	Title      string `json:"title"`
 	Amount     int    `json:"qty"`
 }
 
-type priceRequestDelivery struct {
+type deliveryDTO struct {
 	Type string `json:"type"`
 	Zone string `json:"serviceArea"`
 }
 
 type priceRequest struct {
-	Order           []priceRequestOrder  `json:"order"`
-	DeliveryDetails priceRequestDelivery `json:"deliveryDetails"`
+	Order           []orderDTO  `json:"order"`
+	DeliveryDetails deliveryDTO `json:"deliveryDetails"`
 }
 
 type priceResponse struct {
@@ -99,17 +105,23 @@ type priceResponse struct {
 	Discount int `json:"discount"`
 }
 
-// CalculatePrice returns calculated price depending on order details and delivery zone
-func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, selfPickup bool) (int, error) {
-	requestOrder := make([]priceRequestOrder, len(order.Request.Products))
+func orderToDTO(order OrderDetails) []orderDTO {
+	dto := make([]orderDTO, len(order.Request.Products))
 	for i, p := range order.Request.Products {
-		requestOrder[i] = priceRequestOrder{
+		dto[i] = orderDTO{
 			ID:         p.ID,
 			CategoryID: p.CategoryID,
 			Title:      p.Title,
 			Amount:     p.Amount,
 		}
 	}
+
+	return dto
+}
+
+// CalculatePrice returns calculated price depending on order details and delivery zone
+func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, selfPickup bool) (int, error) {
+	requestOrder := orderToDTO(order)
 
 	shippingType := shippingTypeDelivery
 	if selfPickup {
@@ -118,7 +130,7 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 
 	priceReq := &priceRequest{
 		Order: requestOrder,
-		DeliveryDetails: priceRequestDelivery{
+		DeliveryDetails: deliveryDTO{
 			Type: shippingType,
 			Zone: zone,
 		},
@@ -132,13 +144,101 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 	return priceResp.Delivery - priceResp.Discount, nil
 }
 
+type contactDTO struct {
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+}
+
+type deliveryDetailsDTO struct {
+	Type        string `json:"type"`
+	Date        string `json:"date"`
+	Time        string `json:"time"`
+	DontCall    bool   `json:"dontCall"`
+	Comments    string `json:"comments"`
+	Address     string `json:"address"`
+	Entrance    string `json:"entrance"`
+	Apt         string `json:"apt"`
+	ECode       string `json:"eCode"`
+	ServiceArea string `json:"serviceArea"`
+}
+
+type paymentDTO struct {
+	PaymentMethod string `json:"paymentMethod"`
+	RestFrom      string `json:"restFrom"`
+}
+
+type infoDTO struct {
+	NoNapkins       bool `json:"noNapkins"`
+	Persons         int  `json:"persons"`
+	TrainingPersons int  `json:"trainingPersons"`
+}
+
+type checkoutRequest struct {
+	Description     string             `json:"description"`
+	Currency        string             `json:"currency"`
+	Language        string             `json:"language"`
+	ContactDetails  contactDTO         `json:"contactDetails"`
+	DeliveryDetails deliveryDetailsDTO `json:"deliveryDetails"`
+	PaymentDetails  paymentDTO         `json:"paymentDetails"`
+	Info            infoDTO            `json:"info"`
+	OrderDetails    []orderDTO         `json:"orderDetails"`
+}
+
 // Checkout registers order in Syodo services
 func (s *SyodoService) Checkout(order *OrderDetails) error {
 	if order == nil {
 		return errors.New("nil order checkout")
 	}
 
-	order.OrderID = "bla bla bla bla bla"
+	requestOrder := orderToDTO(*order)
+
+	area := order.ShippingOptionID
+	deliveryType := shippingTypeDelivery
+	if order.ShippingOptionID == SelfPickup {
+		area = ""
+		deliveryType = shippingTypeSelfPickup
+	}
+
+	shipping := order.OrderInfo.ShippingAddress
+	address := shipping.StreetLine1
+	if shipping.StreetLine2 != "" {
+		address += " " + shipping.StreetLine2
+	}
+	address += ", " + shipping.City
+	if shipping.State != "" {
+		address += ", " + shipping.State
+	}
+
+	checkoutReq := checkoutRequest{
+		Description: fmt.Sprintf("Замовлення з Telegram: %s, %s",
+			time.Now().In(s.timezone).Format("2006-01-02 15:04"), order.OrderID),
+		Currency: currency,
+		Language: "ua",
+		ContactDetails: contactDTO{
+			Name:  order.OrderInfo.Name,
+			Phone: order.OrderInfo.PhoneNumber,
+		},
+		DeliveryDetails: deliveryDetailsDTO{
+			Type:        deliveryType,
+			DontCall:    order.Request.DoNotCall,
+			Comments:    order.Request.Comment,
+			Address:     address,
+			ServiceArea: area,
+		},
+		PaymentDetails: paymentDTO{
+			PaymentMethod: "Онлайн",
+		},
+		Info: infoDTO{
+			NoNapkins:       order.Request.NoNapkins,
+			Persons:         order.Request.CutleryCount,
+			TrainingPersons: order.Request.TrainingCutleryCount,
+		},
+		OrderDetails: requestOrder,
+	}
+
+	if err := s.call("/checkout", fasthttp.MethodPost, checkoutReq, nil); err != nil {
+		return fmt.Errorf("checkout API: %w", err)
+	}
 
 	return nil
 }

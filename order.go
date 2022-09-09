@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mymmrac/memkey"
+	"github.com/mymmrac/telego"
 )
 
 // OrderProduct represents a single item in order
@@ -30,10 +31,12 @@ type OrderRequest struct {
 
 // OrderDetails represents full order info
 type OrderDetails struct {
-	InternalOrderID string       `json:"internalOrderID"`
-	OrderID         string       `json:"orderID"`
-	Request         OrderRequest `json:"request"`
-	CreatedAt       time.Time    `json:"createdAt"`
+	OrderID          string            `json:"orderID"`
+	ExternalOrderID  string            `json:"externalOrderID"`
+	Request          OrderRequest      `json:"request"`
+	OrderInfo        *telego.OrderInfo `json:"orderInfo"`
+	ShippingOptionID string            `json:"shippingOptionID"`
+	CreatedAt        time.Time         `json:"createdAt"`
 }
 
 func (h *Handler) storeOrder(order OrderRequest) string {
@@ -44,9 +47,9 @@ func (h *Handler) storeOrder(order OrderRequest) string {
 	}
 
 	memkey.Set(h.orderStore, orderKey, OrderDetails{
-		InternalOrderID: orderKey,
-		Request:         order,
-		CreatedAt:       time.Now().UTC(),
+		OrderID:   orderKey,
+		Request:   order,
+		CreatedAt: time.Now().UTC(),
 	})
 
 	return orderKey
@@ -57,7 +60,7 @@ func (h *Handler) getOrder(key string) (OrderDetails, bool) {
 }
 
 func (h *Handler) updateOrder(order OrderDetails) {
-	memkey.Set(h.orderStore, order.InternalOrderID, order)
+	memkey.Set(h.orderStore, order.OrderID, order)
 }
 
 func (h *Handler) invalidateOldOrders() {
