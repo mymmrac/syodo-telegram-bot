@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/BurntSushi/toml v1.2.0
 	github.com/fasthttp/router v1.4.12
-	github.com/go-playground/validator/v10 v10.11.0
+	github.com/go-playground/validator/v10 v10.11.1
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/golog v0.1.7
