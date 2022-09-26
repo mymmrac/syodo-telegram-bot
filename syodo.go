@@ -286,7 +286,11 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 		return fmt.Errorf("checkout API: %w", err)
 	}
 
-	// TODO: Add signature verification
+	signature := sign(checkoutResp.Data, "privateKey") // TODO: Update to proper
+	if signature != checkoutResp.Signature {
+		return fmt.Errorf("checkout signature does not match")
+	}
+
 	data, err := base64.StdEncoding.DecodeString(checkoutResp.Data)
 	if err != nil {
 		return fmt.Errorf("decode data: %w", err)
@@ -329,14 +333,9 @@ func (s *SyodoService) SuccessPayment(payment *telego.SuccessfulPayment, externa
 	if err != nil {
 		return fmt.Errorf("marshal JSON: %w", err)
 	}
-	data := base64.StdEncoding.EncodeToString(dataJSON)
 
-	//nolint:gosec
-	hash := sha1.New()
-	hash.Write([]byte("privateKey")) // TODO: Update to proper
-	hash.Write([]byte(data))
-	hash.Write([]byte("privateKey"))
-	signature := base64.StdEncoding.EncodeToString(hash.Sum(nil))
+	data := base64.StdEncoding.EncodeToString(dataJSON)
+	signature := sign(data, "privateKey") // TODO: Update to proper
 
 	fullData := fmt.Sprintf("signature=%s&data=%s", signature, data)
 	err = s.call("/payments/callback", fasthttp.MethodPost, fullData, nil)
@@ -345,4 +344,13 @@ func (s *SyodoService) SuccessPayment(payment *telego.SuccessfulPayment, externa
 	}
 
 	return nil
+}
+
+func sign(data string, key string) string {
+	//nolint:gosec
+	hash := sha1.New()
+	hash.Write([]byte(key))
+	hash.Write([]byte(data))
+	hash.Write([]byte(key))
+	return base64.StdEncoding.EncodeToString(hash.Sum(nil))
 }
