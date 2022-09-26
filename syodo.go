@@ -21,6 +21,9 @@ const (
 const (
 	shippingTypeDelivery   = "Доставка"
 	shippingTypeSelfPickup = "Самовивіз"
+
+	shippingPromo4Plus1     = "4+1"
+	shippingPromoSelfPickup = "Самовивіз"
 )
 
 // SyodoService represents a type to interact with Syodo API
@@ -98,8 +101,9 @@ type deliveryDTO struct {
 }
 
 type priceRequest struct {
-	Order           []orderDTO  `json:"order"`
-	DeliveryDetails deliveryDTO `json:"deliveryDetails"`
+	Order             []orderDTO  `json:"order"`
+	DeliveryDetails   deliveryDTO `json:"deliveryDetails"`
+	SelectedPromotion string      `json:"selectedPromotion"`
 }
 
 type priceResponse struct {
@@ -126,8 +130,10 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 	requestOrder := orderToDTO(order)
 
 	shippingType := shippingTypeDelivery
+	shippingPromo := shippingPromo4Plus1
 	if selfPickup {
 		shippingType = shippingTypeSelfPickup
+		shippingPromo = shippingPromoSelfPickup
 	}
 
 	priceReq := &priceRequest{
@@ -136,6 +142,7 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 			Type: shippingType,
 			Zone: zone,
 		},
+		SelectedPromotion: shippingPromo,
 	}
 
 	var priceResp priceResponse
@@ -176,14 +183,15 @@ type infoDTO struct {
 }
 
 type checkoutRequest struct {
-	Description     string             `json:"description"`
-	Currency        string             `json:"currency"`
-	Language        string             `json:"language"`
-	ContactDetails  contactDTO         `json:"contactDetails"`
-	DeliveryDetails deliveryDetailsDTO `json:"deliveryDetails"`
-	PaymentDetails  paymentDTO         `json:"paymentDetails"`
-	Info            infoDTO            `json:"info"`
-	OrderDetails    []orderDTO         `json:"orderDetails"`
+	Description       string             `json:"description"`
+	Currency          string             `json:"currency"`
+	Language          string             `json:"language"`
+	ContactDetails    contactDTO         `json:"contactDetails"`
+	DeliveryDetails   deliveryDetailsDTO `json:"deliveryDetails"`
+	PaymentDetails    paymentDTO         `json:"paymentDetails"`
+	Info              infoDTO            `json:"info"`
+	OrderDetails      []orderDTO         `json:"orderDetails"`
+	SelectedPromotion string             `json:"selectedPromotion"`
 }
 
 type checkoutResponse struct {
@@ -222,9 +230,11 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 
 	area := order.ShippingOptionID
 	deliveryType := shippingTypeDelivery
+	shippingPromo := shippingPromo4Plus1
 	if order.ShippingOptionID == SelfPickup {
 		area = ""
 		deliveryType = shippingTypeSelfPickup
+		shippingPromo = shippingPromoSelfPickup
 	}
 
 	shipping := order.OrderInfo.ShippingAddress
@@ -261,7 +271,8 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			Persons:         order.Request.CutleryCount,
 			TrainingPersons: order.Request.TrainingCutleryCount,
 		},
-		OrderDetails: requestOrder,
+		OrderDetails:      requestOrder,
+		SelectedPromotion: shippingPromo,
 	}
 
 	var checkoutResp checkoutResponse

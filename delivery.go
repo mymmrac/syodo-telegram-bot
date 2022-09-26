@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/golang/geo/s2"
 	"github.com/mymmrac/telego"
@@ -62,10 +63,18 @@ func NewDeliveryStrategy(cfg *config.Config, log logger.Logger) (*DeliveryStrate
 
 // CalculateZone returns delivery zone by its address
 func (s *DeliveryStrategy) CalculateZone(shipping telego.ShippingAddress) DeliveryZone {
-	ctx := context.Background()
+	country := strings.ToLower(shipping.CountryCode)
+	if country != "ua" {
+		s.log.Errorf("Calculate zone: non UA country: %s", country)
+		return ZoneUnknown
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+
 	results, err := s.client.Geocode(ctx, &maps.GeocodingRequest{
 		Components: map[maps.Component]string{
-			maps.ComponentCountry:            strings.ToLower(shipping.CountryCode),
+			maps.ComponentCountry:            country,
 			maps.ComponentLocality:           shipping.City,
 			maps.ComponentAdministrativeArea: shipping.State,
 			maps.ComponentRoute:              strings.TrimSpace(shipping.StreetLine1 + " " + shipping.StreetLine2),
