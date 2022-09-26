@@ -27,6 +27,7 @@ type OrderRequest struct {
 	CutleryCount         int            `json:"cutleryCount"`
 	TrainingCutleryCount int            `json:"trainingCutleryCount"`
 	Comment              string         `json:"comment"`
+	Promotion            string         `json:"promotion"`
 }
 
 // OrderDetails represents full order info

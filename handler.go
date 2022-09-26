@@ -177,6 +177,18 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 		return
 	}
 
+	var selfPickupLabel string
+	switch order.Request.Promotion {
+	case shippingPromo4Plus1:
+		selfPickupLabel = "4+1"
+	case shippingPromoSelfPickup:
+		selfPickupLabel = "-10%"
+	default:
+		h.log.Errorf("Unknown promotion: %s", order.Request.Promotion)
+		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
+		return
+	}
+
 	var (
 		wg      sync.WaitGroup
 		options []telego.ShippingOption
@@ -190,19 +202,23 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 		priceSelfPickupErr error
 	)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	if order.Request.Promotion == shippingPromo4Plus1 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 
-		zone = h.delivery.CalculateZone(query.ShippingAddress)
+			zone = h.delivery.CalculateZone(query.ShippingAddress)
 
-		priceDelivery, priceDeliveryErr = h.syodo.CalculatePrice(order, zone, false)
-		if priceDeliveryErr != nil {
-			return
-		}
+			priceDelivery, priceDeliveryErr = h.syodo.CalculatePrice(order, zone, false)
+			if priceDeliveryErr != nil {
+				return
+			}
 
-		label = labelByZone(zone)
-	}()
+			label = labelByZone(zone)
+		}()
+	} else {
+		zone = ZoneUnknown
+	}
 
 	wg.Add(1)
 	go func() {
@@ -225,7 +241,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	}
 
 	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
-		tu.LabeledPrice("👋 Самовивіз (-10%)", priceSelfPickup),
+		tu.LabeledPrice(fmt.Sprintf("👋 Самовивіз (%s)", selfPickupLabel), priceSelfPickup),
 	))
 
 	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))

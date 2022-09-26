@@ -15,7 +15,20 @@
         </div>
       </transition-group>
     </div>
-    <div class="grid grid-cols-1 gap-2 pt-8">
+    <div class="grid grid-cols-1 gap-2 pt-1">
+      <div class="bg-tg-button h-1 rounded"></div>
+
+      <label class="flex justify-between gap-2">
+        Акція 4+1
+        <input type="radio" class="m-radio" value="4+1" v-model="order.promotion">
+      </label>
+      <label class="flex justify-between gap-2">
+        Акція -10% на самовивіз
+        <input type="radio" class="m-radio" value="Самовивіз" v-model="order.promotion">
+      </label>
+
+      <div class="bg-tg-button h-1 rounded"></div>
+
       <label class="flex justify-between gap-2">
         Не телефонуйте мені
         <input type="checkbox" class="m-checkbox" v-model="order.doNotCall">

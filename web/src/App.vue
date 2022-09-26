@@ -173,6 +173,7 @@ function confirmOrder() {
     cutleryCount: number
     trainingCutleryCount: number
     comment: string
+    promotion: string
   } = {
     appData: tg.initData,
     products: Array.from(order.value.products.values()).map(op => {
@@ -189,6 +190,7 @@ function confirmOrder() {
     cutleryCount: order.value.cutleryCount,
     trainingCutleryCount: order.value.trainingCutleryCount,
     comment: order.value.addComment ? order.value.comment : "",
+    promotion: order.value.promotion,
   }
 
   botAPI.post("/order", finalOrder)

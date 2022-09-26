@@ -17,6 +17,7 @@ export const useGlobalStore = defineStore("global", {
             trainingCutleryCount: 0,
             addComment: false,
             comment: "",
+            promotion: "4+1",
         },
 
         selectedCategory: categories[0].id,

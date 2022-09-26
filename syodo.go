@@ -150,10 +150,8 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 	requestOrder := orderToDTO(order)
 
 	shippingType := shippingTypeDelivery
-	shippingPromo := shippingPromo4Plus1
 	if selfPickup {
 		shippingType = shippingTypeSelfPickup
-		shippingPromo = shippingPromoSelfPickup
 	}
 
 	priceReq := &priceRequest{
@@ -162,7 +160,7 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 			Type: shippingType,
 			Zone: zone,
 		},
-		SelectedPromotion: shippingPromo,
+		SelectedPromotion: order.Request.Promotion,
 	}
 
 	var priceResp priceResponse
@@ -250,11 +248,9 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 
 	area := order.ShippingOptionID
 	deliveryType := shippingTypeDelivery
-	shippingPromo := shippingPromo4Plus1
 	if order.ShippingOptionID == SelfPickup {
 		area = ""
 		deliveryType = shippingTypeSelfPickup
-		shippingPromo = shippingPromoSelfPickup
 	}
 
 	shipping := order.OrderInfo.ShippingAddress
@@ -281,6 +277,9 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			DontCall:    order.Request.DoNotCall,
 			Comments:    order.Request.Comment,
 			Address:     address,
+			Entrance:    "-",
+			Apt:         "-",
+			ECode:       "-",
 			ServiceArea: area,
 		},
 		PaymentDetails: paymentDTO{
@@ -292,7 +291,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			TrainingPersons: order.Request.TrainingCutleryCount,
 		},
 		OrderDetails:      requestOrder,
-		SelectedPromotion: shippingPromo,
+		SelectedPromotion: order.Request.Promotion,
 	}
 
 	var checkoutResp checkoutResponse

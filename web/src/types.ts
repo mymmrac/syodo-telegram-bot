@@ -57,6 +57,7 @@ export type Order = {
     trainingCutleryCount: number
     addComment: boolean
     comment: string
+    promotion: string
 }
 
 export type ProductListItem = Product | SubCategory

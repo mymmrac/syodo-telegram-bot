@@ -97,7 +97,7 @@ type App struct {
 	SyodoAPIKey        string `validate:"required"`
 	WebAppURL          string `validate:"url"`
 	SyodoAPIURL        string `validate:"url"`
-	SyodoResultURL     string `validate:"url"`
+	SyodoResultURL     string `validate:"url"` // TODO: Remove
 }
 
 const (
