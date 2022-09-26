@@ -86,6 +86,7 @@ type Settings struct {
 	WebhookURL         string        `validate:"url"`
 	LongPullingTimeout int           `validate:"gte=0"`
 	RequestTimeout     time.Duration `validate:"gt=0"`
+	TestMode           bool          `validate:"-"`
 }
 
 // App represents business logic settings
@@ -97,7 +98,6 @@ type App struct {
 	SyodoAPIKey        string `validate:"required"`
 	WebAppURL          string `validate:"url"`
 	SyodoAPIURL        string `validate:"url"`
-	SyodoResultURL     string `validate:"url"`
 }
 
 const (

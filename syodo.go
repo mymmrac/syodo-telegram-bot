@@ -281,6 +281,9 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			DontCall:    order.Request.DoNotCall,
 			Comments:    order.Request.Comment,
 			Address:     address,
+			Entrance:    "-",
+			Apt:         "-",
+			ECode:       "-",
 			ServiceArea: area,
 		},
 		PaymentDetails: paymentDTO{
@@ -300,11 +303,12 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 		return fmt.Errorf("checkout API: %w", err)
 	}
 
-	// TODO: Fix signature
-	// signature := sign(checkoutResp.Data, s.cfg.App.LiqPayPrivetKeyEnv)
-	// if signature != checkoutResp.Signature {
-	// 	return fmt.Errorf("checkout signature does not match")
-	// }
+	if !s.cfg.Settings.TestMode {
+		signature := sign(checkoutResp.Data, s.cfg.App.LiqPayPrivetKeyEnv)
+		if signature != checkoutResp.Signature {
+			return fmt.Errorf("checkout signature does not match")
+		}
+	}
 
 	data, err := base64.StdEncoding.DecodeString(checkoutResp.Data)
 	if err != nil {
@@ -318,7 +322,12 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	}
 
 	order.ExternalOrderID = checkout.OrderID
-	order.OrderURL = strings.Replace(checkout.ResultURL, "APP_LIQ_PAY_RESULT_URL", s.cfg.App.SyodoResultURL, 1)
+	if s.cfg.Settings.TestMode {
+		order.OrderURL = strings.Replace(checkout.ResultURL, "APP_LIQ_PAY_RESULT_URL",
+			"https://www.syodo.com.ua/ua/success", 1)
+	} else {
+		order.OrderURL = checkout.ResultURL
+	}
 	order.TotalAmount = checkout.Amount
 
 	return nil

@@ -10,8 +10,8 @@ serverHost = "localhost:8080"
 webhookURL = "https://mymm.gq/syodo-bot"
 longPullingTimeout = 4
 requestTimeout = "10s"
+testMode = true
 
 [app]
 webAppURL = "https://mymm.gq/syodo"
 syodoAPIURL = "https://hjrc5e9go8.execute-api.eu-central-1.amazonaws.com/dev"
-syodoResultURL = "https://www.syodo.com.ua/ua/success"
