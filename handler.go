@@ -188,15 +188,17 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 
 		priceSelfPickup    int
 		priceSelfPickupErr error
+
+		priceSelfPickup4Plus1    int
+		priceSelfPickup4Plus1Err error
 	)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
 		zone = h.delivery.CalculateZone(query.ShippingAddress)
 
-		priceDelivery, priceDeliveryErr = h.syodo.CalculatePrice(order, zone, false)
+		priceDelivery, priceDeliveryErr = h.syodo.CalculatePrice(order, zone, false, shippingPromo4Plus1)
 		if priceDeliveryErr != nil {
 			return
 		}
@@ -207,25 +209,34 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		priceSelfPickup, priceSelfPickupErr = h.syodo.CalculatePrice(order, "", true, shippingPromoSelfPickup)
+	}()
 
-		priceSelfPickup, priceSelfPickupErr = h.syodo.CalculatePrice(order, "", true)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		priceSelfPickup4Plus1, priceSelfPickup4Plus1Err = h.syodo.CalculatePrice(order, "", true, shippingPromo4Plus1)
 	}()
 
 	wg.Wait()
-	if priceDeliveryErr != nil || priceSelfPickupErr != nil {
-		h.log.Errorf("Calculate price: %s, %s", priceDeliveryErr, priceSelfPickupErr)
+	if priceDeliveryErr != nil || priceSelfPickupErr != nil || priceSelfPickup4Plus1Err != nil {
+		h.log.Errorf("Calculate price: %s, %s, %s", priceDeliveryErr, priceSelfPickupErr, priceSelfPickup4Plus1Err)
 		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
 		return
 	}
 
 	if zone != ZoneUnknown {
-		options = append(options, tu.ShippingOption(zone, "Доставка курєром",
+		options = append(options, tu.ShippingOption(zone, "Доставка курєром (4+1)",
 			tu.LabeledPrice(label, priceDelivery),
 		))
 	}
 
-	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз",
+	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз (-10%)",
 		tu.LabeledPrice("👋 Самовивіз (-10%)", priceSelfPickup),
+	))
+
+	options = append(options, tu.ShippingOption(SelfPickup4Plus1, "Самовивіз (4+1)",
+		tu.LabeledPrice("👋 Самовивіз (4+1)", priceSelfPickup4Plus1),
 	))
 
 	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
@@ -238,11 +249,11 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 func labelByZone(zone DeliveryZone) string {
 	switch zone {
 	case ZoneGreen:
-		return "🛵 Доставка у зелену зону"
+		return "🛵 Доставка у зелену зону (4+1"
 	case ZoneYellow:
-		return "🛵 Доставка у жовту зону"
+		return "🛵 Доставка у жовту зону (4+1)"
 	case ZoneRed:
-		return "🛵 Доставка у червону зону"
+		return "🛵 Доставка у червону зону (4+1)"
 	default:
 		// No shipping option
 		return "<UNKNOWN>"

@@ -24,8 +24,11 @@ const (
 	ZoneRed     DeliveryZone = "red"
 )
 
-// SelfPickup represents self pickup delivery method
+// SelfPickup represents self pickup delivery method with -10% promotion
 const SelfPickup = "self_pickup"
+
+// SelfPickup4Plus1 represents self pickup delivery method with 4+1 promotion
+const SelfPickup4Plus1 = "self_pickup_4_plus_1"
 
 // DeliveryMethodIDs lists all delivery methods
 var DeliveryMethodIDs = map[string]struct{}{

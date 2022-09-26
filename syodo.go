@@ -146,14 +146,17 @@ func orderToDTO(order OrderDetails) []orderDTO {
 }
 
 // CalculatePrice returns calculated price depending on order details and delivery zone
-func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, selfPickup bool) (int, error) {
+func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, selfPickup bool, promotion string,
+) (int, error) {
 	requestOrder := orderToDTO(order)
 
+	if !selfPickup && promotion == shippingPromoSelfPickup {
+		return 0, fmt.Errorf("self pickup + self pickup promotion")
+	}
+
 	shippingType := shippingTypeDelivery
-	shippingPromo := shippingPromo4Plus1
 	if selfPickup {
 		shippingType = shippingTypeSelfPickup
-		shippingPromo = shippingPromoSelfPickup
 	}
 
 	priceReq := &priceRequest{
@@ -162,7 +165,7 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 			Type: shippingType,
 			Zone: zone,
 		},
-		SelectedPromotion: shippingPromo,
+		SelectedPromotion: promotion,
 	}
 
 	var priceResp priceResponse
@@ -251,20 +254,15 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	area := order.ShippingOptionID
 	deliveryType := shippingTypeDelivery
 	shippingPromo := shippingPromo4Plus1
-	if order.ShippingOptionID == SelfPickup {
+
+	switch order.ShippingOptionID {
+	case SelfPickup:
 		area = ""
 		deliveryType = shippingTypeSelfPickup
 		shippingPromo = shippingPromoSelfPickup
-	}
-
-	shipping := order.OrderInfo.ShippingAddress
-	address := shipping.StreetLine1
-	if shipping.StreetLine2 != "" {
-		address += " " + shipping.StreetLine2
-	}
-	address += ", " + shipping.City
-	if shipping.State != "" {
-		address += ", " + shipping.State
+	case SelfPickup4Plus1:
+		area = ""
+		deliveryType = shippingTypeSelfPickup
 	}
 
 	checkoutReq := checkoutRequest{
@@ -280,7 +278,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			Type:        deliveryType,
 			DontCall:    order.Request.DoNotCall,
 			Comments:    order.Request.Comment,
-			Address:     address,
+			Address:     constructAddress(order.OrderInfo.ShippingAddress),
 			Entrance:    "-",
 			Apt:         "-",
 			ECode:       "-",
@@ -331,6 +329,20 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	order.TotalAmount = checkout.Amount
 
 	return nil
+}
+
+func constructAddress(shipping *telego.ShippingAddress) string {
+	address := shipping.StreetLine1
+	if shipping.StreetLine2 != "" {
+		address += " " + shipping.StreetLine2
+	}
+
+	address += ", " + shipping.City
+	if shipping.State != "" {
+		address += ", " + shipping.State
+	}
+
+	return address
 }
 
 type successPaymentDTO struct {
