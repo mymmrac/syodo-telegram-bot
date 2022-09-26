@@ -65,13 +65,8 @@ func (s *SyodoService) callJSON(path, method string, data, result any) error {
 	return s.call(path, method, contentTypeJSON, jsonData, result)
 }
 
-func (s *SyodoService) callURL(path, method string, data url.Values, result any) error {
-	var urlData []byte
-	if data != nil {
-		urlData = []byte(data.Encode())
-	}
-
-	return s.call(path, method, contentTypeURL, urlData, result)
+func (s *SyodoService) callURL(path, method, data string, result any) error {
+	return s.call(path, method, contentTypeURL, []byte(data), result)
 }
 
 func (s *SyodoService) call(path, method, contentType string, data []byte, result any) error {
@@ -331,7 +326,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 
 type successPaymentDTO struct {
 	PayType                 string `json:"paytype"`
-	OrderStatus             string `json:"order_status"`
+	Status                  string `json:"status"`
 	ProviderPaymentChargeID string `json:"liqpay_order_id"`
 	OrderID                 string `json:"transaction_id"`
 	TotalAmount             int    `json:"amount"`
@@ -342,7 +337,7 @@ type successPaymentDTO struct {
 func (s *SyodoService) SuccessPayment(payment *telego.SuccessfulPayment, externalOrderID string) error {
 	successPayment := successPaymentDTO{
 		PayType:                 "telegram",
-		OrderStatus:             "success",
+		Status:                  "success",
 		ProviderPaymentChargeID: payment.ProviderPaymentChargeID,
 		OrderID:                 payment.InvoicePayload,
 		TotalAmount:             payment.TotalAmount,
@@ -356,11 +351,9 @@ func (s *SyodoService) SuccessPayment(payment *telego.SuccessfulPayment, externa
 
 	data := base64.StdEncoding.EncodeToString(dataJSON)
 	signature := sign(data, s.cfg.App.LiqPayPrivetKeyEnv)
+	fullData := fmt.Sprintf("signature=%s&data=%s", signature, data)
 
-	fullData := url.Values{
-		"data":      {data},
-		"signature": {signature},
-	}
+	s.log.Debugf("Payments callback data: %s", fullData)
 
 	if err = s.callURL("/payments/callback", fasthttp.MethodPost, fullData, nil); err != nil {
 		return fmt.Errorf("success payment API: %w", err)
