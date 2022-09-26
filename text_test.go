@@ -29,6 +29,7 @@ func TestTextData(t *testing.T) {
 		"orderDescription",
 		"calculateShippingPriceError",
 		"successPaymentOrderNotFoundError",
+		"successPaymentOrderFailedError",
 	}
 
 	templates := []struct {

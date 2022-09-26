@@ -79,6 +79,7 @@ type Settings struct {
 	ServerHost         string        `validate:"hostname_port"`
 	WebhookURL         string        `validate:"url"`
 	LongPullingTimeout int           `validate:"gte=0"`
+	RequestTimeout     time.Duration `validate:"gt=0"`
 }
 
 // App represents business logic settings

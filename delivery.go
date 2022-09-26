@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/golang/geo/s2"
 	"github.com/mymmrac/telego"
@@ -38,6 +37,7 @@ var DeliveryMethodIDs = map[string]struct{}{
 
 // DeliveryStrategy represents model of calculation delivery zones by addresses
 type DeliveryStrategy struct {
+	cfg    *config.Config
 	log    logger.Logger
 	client *maps.Client
 
@@ -53,6 +53,7 @@ func NewDeliveryStrategy(cfg *config.Config, log logger.Logger) (*DeliveryStrate
 	}
 
 	return &DeliveryStrategy{
+		cfg:    cfg,
 		log:    log,
 		client: client,
 
@@ -69,7 +70,7 @@ func (s *DeliveryStrategy) CalculateZone(shipping telego.ShippingAddress) Delive
 		return ZoneUnknown
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.Settings.RequestTimeout)
 	defer cancel()
 
 	results, err := s.client.Geocode(ctx, &maps.GeocodingRequest{

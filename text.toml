@@ -69,3 +69,10 @@ successPaymentOrderNotFoundError = """
 
 Звяжіться з адміністрацією за контактами зазначиними тут /help
 """
+
+# Error that is displayed if order was failed to confirm after success payment
+successPaymentOrderFailedError = """
+На жаль, ми не змогли підтвердити оплату Вашого замовлення
+
+Звяжіться з адміністрацією за контактами зазначиними тут /help
+"""

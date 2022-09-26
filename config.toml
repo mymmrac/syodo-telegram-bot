@@ -9,6 +9,7 @@ useLongPulling = true
 serverHost = "localhost:8080"
 webhookURL = "https://mymm.gq/syodo-bot"
 longPullingTimeout = 4
+requestTimeout = "10s"
 
 [app]
 webAppURL = "https://mymm.gq/syodo"

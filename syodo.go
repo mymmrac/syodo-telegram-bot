@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha1" //nolint:gosec
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mymmrac/telego"
 	"github.com/valyala/fasthttp"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
@@ -77,7 +79,7 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
-	if err = s.client.Do(req, resp); err != nil {
+	if err = s.client.DoTimeout(req, resp, s.cfg.Settings.RequestTimeout); err != nil {
 		return fmt.Errorf("call syodo: %w", err)
 	}
 
@@ -284,6 +286,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 		return fmt.Errorf("checkout API: %w", err)
 	}
 
+	// TODO: Add signature verification
 	data, err := base64.StdEncoding.DecodeString(checkoutResp.Data)
 	if err != nil {
 		return fmt.Errorf("decode data: %w", err)
@@ -298,6 +301,48 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	order.ExternalOrderID = checkout.OrderID
 	order.OrderURL = strings.Replace(checkout.ResultURL, "APP_LIQ_PAY_RESULT_URL", s.cfg.App.SyodoResultURL, 1)
 	order.TotalAmount = checkout.Amount
+
+	return nil
+}
+
+type successPaymentDTO struct {
+	PayType                 string `json:"paytype"`
+	OrderStatus             string `json:"order_status"`
+	ProviderPaymentChargeID string `json:"liqpay_order_id"`
+	OrderID                 string `json:"transaction_id"`
+	TotalAmount             int    `json:"amount"`
+	ExternalOrderID         string `json:"order_id"`
+}
+
+// SuccessPayment confirm success payment in Syodo
+func (s *SyodoService) SuccessPayment(payment *telego.SuccessfulPayment, externalOrderID string) error {
+	successPayment := successPaymentDTO{
+		PayType:                 "telegram",
+		OrderStatus:             "success",
+		ProviderPaymentChargeID: payment.ProviderPaymentChargeID,
+		OrderID:                 payment.InvoicePayload,
+		TotalAmount:             payment.TotalAmount,
+		ExternalOrderID:         externalOrderID,
+	}
+
+	dataJSON, err := json.Marshal(successPayment)
+	if err != nil {
+		return fmt.Errorf("marshal JSON: %w", err)
+	}
+	data := base64.StdEncoding.EncodeToString(dataJSON)
+
+	//nolint:gosec
+	hash := sha1.New()
+	hash.Write([]byte("privateKey")) // TODO: Update to proper
+	hash.Write([]byte(data))
+	hash.Write([]byte("privateKey"))
+	signature := base64.StdEncoding.EncodeToString(hash.Sum(nil))
+
+	fullData := fmt.Sprintf("signature=%s&data=%s", signature, data)
+	err = s.call("/payments/callback", fasthttp.MethodPost, fullData, nil)
+	if err != nil {
+		return fmt.Errorf("success payment API: %w", err)
+	}
 
 	return nil
 }
