@@ -17,6 +17,7 @@ const (
 	providerTokenEnv    = "PROVIDER_TOKEN"
 	googleMapsAPIKeyEnv = "GOOGLE_MAPS_API_KEY"
 	syodoAPIKeyEnv      = "SYODO_API_KEY"
+	liqPayPrivetKeyEnv  = "LIQ_PAY_PRIVET_KEY"
 )
 
 // LoadConfig loads config from config file and environment variables
@@ -38,6 +39,11 @@ func LoadConfig(filename string) (*Config, error) {
 	cfg.App.ProviderToken, ok = os.LookupEnv(providerTokenEnv)
 	if !ok {
 		return nil, fmt.Errorf("no %q environment variable", providerTokenEnv)
+	}
+
+	cfg.App.LiqPayPrivetKeyEnv, ok = os.LookupEnv(liqPayPrivetKeyEnv)
+	if !ok {
+		return nil, fmt.Errorf("no %q environment variable", liqPayPrivetKeyEnv)
 	}
 
 	cfg.App.GoogleMapsAPIKey, ok = os.LookupEnv(googleMapsAPIKeyEnv)
@@ -84,13 +90,14 @@ type Settings struct {
 
 // App represents business logic settings
 type App struct {
-	BotToken         string `validate:"required"`
-	ProviderToken    string `validate:"required"`
-	GoogleMapsAPIKey string `validate:"required"`
-	SyodoAPIKey      string `validate:"required"`
-	WebAppURL        string `validate:"url"`
-	SyodoAPIURL      string `validate:"url"`
-	SyodoResultURL   string `validate:"url"`
+	BotToken           string `validate:"required"`
+	ProviderToken      string `validate:"required"`
+	LiqPayPrivetKeyEnv string `validate:"required"`
+	GoogleMapsAPIKey   string `validate:"required"`
+	SyodoAPIKey        string `validate:"required"`
+	WebAppURL          string `validate:"url"`
+	SyodoAPIURL        string `validate:"url"`
+	SyodoResultURL     string `validate:"url"`
 }
 
 const (

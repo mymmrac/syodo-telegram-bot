@@ -19,6 +19,7 @@ import (
 
 const (
 	contentTypeJSON = "application/json"
+	contentTypeURL  = "application/x-www-form-urlencoded"
 	authHeader      = "x-api-key"
 )
 
@@ -51,7 +52,29 @@ func NewSyodoService(cfg *config.Config, log logger.Logger) *SyodoService {
 	}
 }
 
-func (s *SyodoService) call(path string, method string, data, result any) error {
+func (s *SyodoService) callJSON(path, method string, data, result any) error {
+	var jsonData []byte
+	if data != nil {
+		var err error
+		jsonData, err = json.Marshal(data)
+		if err != nil {
+			return fmt.Errorf("encode data: %w", err)
+		}
+	}
+
+	return s.call(path, method, contentTypeJSON, jsonData, result)
+}
+
+func (s *SyodoService) callURL(path, method string, data url.Values, result any) error {
+	var urlData []byte
+	if data != nil {
+		urlData = []byte(data.Encode())
+	}
+
+	return s.call(path, method, contentTypeURL, urlData, result)
+}
+
+func (s *SyodoService) call(path, method, contentType string, data []byte, result any) error {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
@@ -63,17 +86,11 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 	req.SetRequestURI(apiURL)
 
 	req.Header.SetMethod(method)
-	req.Header.SetContentType(contentTypeJSON)
+	req.Header.SetContentType(contentType)
 	req.Header.Set(authHeader, s.cfg.App.SyodoAPIKey)
 
 	if data != nil {
-		var jsonData []byte
-		jsonData, err = json.Marshal(data)
-		if err != nil {
-			return fmt.Errorf("encode data: %w", err)
-		}
-
-		req.SetBodyRaw(jsonData)
+		req.SetBodyRaw(data)
 	}
 
 	resp := fasthttp.AcquireResponse()
@@ -87,8 +104,10 @@ func (s *SyodoService) call(path string, method string, data, result any) error 
 		return fmt.Errorf("call syodo bad status: %d", statusCode)
 	}
 
-	if err = json.Unmarshal(resp.Body(), result); err != nil {
-		return fmt.Errorf("decode result: %w", err)
+	if result != nil {
+		if err = json.Unmarshal(resp.Body(), result); err != nil {
+			return fmt.Errorf("decode result: %w", err)
+		}
 	}
 
 	return nil
@@ -152,7 +171,7 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 	}
 
 	var priceResp priceResponse
-	if err := s.call("/price", fasthttp.MethodPost, priceReq, &priceResp); err != nil {
+	if err := s.callJSON("/price", fasthttp.MethodPost, priceReq, &priceResp); err != nil {
 		return 0, fmt.Errorf("price API: %w", err)
 	}
 
@@ -282,14 +301,15 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	}
 
 	var checkoutResp checkoutResponse
-	if err := s.call("/payments/checkout", fasthttp.MethodPost, checkoutReq, &checkoutResp); err != nil {
+	if err := s.callJSON("/payments/checkout", fasthttp.MethodPost, checkoutReq, &checkoutResp); err != nil {
 		return fmt.Errorf("checkout API: %w", err)
 	}
 
-	signature := sign(checkoutResp.Data, "privateKey") // TODO: Update to proper
-	if signature != checkoutResp.Signature {
-		return fmt.Errorf("checkout signature does not match")
-	}
+	// TODO: Fix signature
+	// signature := sign(checkoutResp.Data, s.cfg.App.LiqPayPrivetKeyEnv)
+	// if signature != checkoutResp.Signature {
+	// 	return fmt.Errorf("checkout signature does not match")
+	// }
 
 	data, err := base64.StdEncoding.DecodeString(checkoutResp.Data)
 	if err != nil {
@@ -335,18 +355,21 @@ func (s *SyodoService) SuccessPayment(payment *telego.SuccessfulPayment, externa
 	}
 
 	data := base64.StdEncoding.EncodeToString(dataJSON)
-	signature := sign(data, "privateKey") // TODO: Update to proper
+	signature := sign(data, s.cfg.App.LiqPayPrivetKeyEnv)
 
-	fullData := fmt.Sprintf("signature=%s&data=%s", signature, data)
-	err = s.call("/payments/callback", fasthttp.MethodPost, fullData, nil)
-	if err != nil {
+	fullData := url.Values{
+		"data":      {data},
+		"signature": {signature},
+	}
+
+	if err = s.callURL("/payments/callback", fasthttp.MethodPost, fullData, nil); err != nil {
 		return fmt.Errorf("success payment API: %w", err)
 	}
 
 	return nil
 }
 
-func sign(data string, key string) string {
+func sign(data, key string) string {
 	//nolint:gosec
 	hash := sha1.New()
 	hash.Write([]byte(key))
