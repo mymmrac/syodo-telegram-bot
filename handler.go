@@ -181,42 +181,45 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 		wg      sync.WaitGroup
 		options []telego.ShippingOption
 
-		zone             DeliveryZone
-		label            string
-		priceDelivery    int
-		priceDeliveryErr error
-
 		priceSelfPickup    int
 		priceSelfPickupErr error
 
 		priceSelfPickup4Plus1    int
 		priceSelfPickup4Plus1Err error
+
+		priceDelivery    int
+		priceDeliveryErr error
+		zone             DeliveryZone
 	)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		zone = h.delivery.CalculateZone(query.ShippingAddress)
+		priceSelfPickup, priceSelfPickupErr = h.syodo.CalculatePriceSelfPickup(order, promoSelfPickup)
+	}()
 
-		priceDelivery, priceDeliveryErr = h.syodo.CalculatePrice(order, zone, false, shippingPromo4Plus1)
-		if priceDeliveryErr != nil {
-			return
+	isPromo4Plus1 := checkIf4Plus1(order.Request.Products)
+
+	wg.Add(1)
+	go func() {
+		wg.Done()
+
+		deliveryPromo := ""
+		if isPromo4Plus1 {
+			deliveryPromo = promo4Plus1
 		}
 
-		label = labelByZone(zone)
+		zone = h.delivery.CalculateZone(query.ShippingAddress)
+		priceDelivery, priceDeliveryErr = h.syodo.CalculatePriceDelivery(order, zone, deliveryPromo)
 	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		priceSelfPickup, priceSelfPickupErr = h.syodo.CalculatePrice(order, "", true, shippingPromoSelfPickup)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		priceSelfPickup4Plus1, priceSelfPickup4Plus1Err = h.syodo.CalculatePrice(order, "", true, shippingPromo4Plus1)
-	}()
+	if isPromo4Plus1 {
+		wg.Add(1)
+		go func() {
+			wg.Done()
+			priceSelfPickup4Plus1, priceSelfPickup4Plus1Err = h.syodo.CalculatePriceSelfPickup(order, promo4Plus1)
+		}()
+	}
 
 	wg.Wait()
 	if priceDeliveryErr != nil || priceSelfPickupErr != nil || priceSelfPickup4Plus1Err != nil {
@@ -225,19 +228,28 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 		return
 	}
 
-	if zone != ZoneUnknown {
-		options = append(options, tu.ShippingOption(zone, "Доставка курєром (4+1)",
-			tu.LabeledPrice(label, priceDelivery),
-		))
+	if isPromo4Plus1 {
+		options = append(options,
+			tu.ShippingOption(zone, "Доставка курєром (акція 4+1)",
+				tu.LabeledPrice(labelByZone(zone)+" (акція 4+1)", priceDelivery),
+			),
+			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
+				tu.LabeledPrice("👋 Самовивіз (акція -10%)", priceSelfPickup),
+			),
+			tu.ShippingOption(SelfPickup4Plus1, "Самовивіз (акція 4+1)",
+				tu.LabeledPrice("👋 Самовивіз (акція 4+1)", priceSelfPickup4Plus1),
+			),
+		)
+	} else {
+		options = append(options,
+			tu.ShippingOption(zone, "Доставка курєром",
+				tu.LabeledPrice(labelByZone(zone), priceDelivery),
+			),
+			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
+				tu.LabeledPrice("👋 Самовивіз (акція -10%)", priceSelfPickup),
+			),
+		)
 	}
-
-	options = append(options, tu.ShippingOption(SelfPickup, "Самовивіз (-10%)",
-		tu.LabeledPrice("👋 Самовивіз (-10%)", priceSelfPickup),
-	))
-
-	options = append(options, tu.ShippingOption(SelfPickup4Plus1, "Самовивіз (4+1)",
-		tu.LabeledPrice("👋 Самовивіз (4+1)", priceSelfPickup4Plus1),
-	))
 
 	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
 	if err != nil {
@@ -246,14 +258,32 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	}
 }
 
+func checkIf4Plus1(products []OrderProduct) bool {
+	const promo4Plus1Count = 4
+
+	count := 0
+	for _, product := range products {
+		// TODO: Think how to exclude sets and only count roles
+		if product.CategoryID == "7" || product.CategoryID == "14" { // Роли, Без лактози
+			count += product.Amount
+
+			if count > promo4Plus1Count {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func labelByZone(zone DeliveryZone) string {
 	switch zone {
 	case ZoneGreen:
-		return "🛵 Доставка у зелену зону (4+1"
+		return "🛵 Доставка у зелену зону"
 	case ZoneYellow:
-		return "🛵 Доставка у жовту зону (4+1)"
+		return "🛵 Доставка у жовту зону"
 	case ZoneRed:
-		return "🛵 Доставка у червону зону (4+1)"
+		return "🛵 Доставка у червону зону"
 	default:
 		// No shipping option
 		return "<UNKNOWN>"

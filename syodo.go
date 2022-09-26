@@ -27,8 +27,8 @@ const (
 	shippingTypeDelivery   = "Доставка"
 	shippingTypeSelfPickup = "Самовивіз"
 
-	shippingPromo4Plus1     = "4+1"
-	shippingPromoSelfPickup = "Самовивіз"
+	promo4Plus1     = "4+1"
+	promoSelfPickup = "Самовивіз"
 )
 
 // SyodoService represents a type to interact with Syodo API
@@ -131,33 +131,19 @@ type priceResponse struct {
 	Discount int `json:"discount"`
 }
 
-func orderToDTO(order OrderDetails) []orderDTO {
-	dto := make([]orderDTO, len(order.Request.Products))
-	for i, p := range order.Request.Products {
-		dto[i] = orderDTO{
-			ID:         p.ID,
-			CategoryID: p.CategoryID,
-			Title:      p.Title,
-			Amount:     p.Amount,
-		}
-	}
-
-	return dto
+// CalculatePriceDelivery returns calculated price depending on order details and delivery zone
+func (s *SyodoService) CalculatePriceDelivery(order OrderDetails, zone DeliveryZone, promotion string) (int, error) {
+	return s.calculatePrice(order, shippingTypeDelivery, zone, promotion)
 }
 
-// CalculatePrice returns calculated price depending on order details and delivery zone
-func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, selfPickup bool, promotion string,
+// CalculatePriceSelfPickup returns calculated price depending on order details
+func (s *SyodoService) CalculatePriceSelfPickup(order OrderDetails, promotion string) (int, error) {
+	return s.calculatePrice(order, shippingTypeSelfPickup, "", promotion)
+}
+
+func (s *SyodoService) calculatePrice(order OrderDetails, shippingType string, zone DeliveryZone, promotion string,
 ) (int, error) {
-	requestOrder := orderToDTO(order)
-
-	if !selfPickup && promotion == shippingPromoSelfPickup {
-		return 0, fmt.Errorf("self pickup + self pickup promotion")
-	}
-
-	shippingType := shippingTypeDelivery
-	if selfPickup {
-		shippingType = shippingTypeSelfPickup
-	}
+	requestOrder := orderToDTO(order) // TODO: Pass already converted
 
 	priceReq := &priceRequest{
 		Order: requestOrder,
@@ -174,6 +160,20 @@ func (s *SyodoService) CalculatePrice(order OrderDetails, zone DeliveryZone, sel
 	}
 
 	return priceResp.Delivery - priceResp.Discount, nil
+}
+
+func orderToDTO(order OrderDetails) []orderDTO {
+	dto := make([]orderDTO, len(order.Request.Products))
+	for i, p := range order.Request.Products {
+		dto[i] = orderDTO{
+			ID:         p.ID,
+			CategoryID: p.CategoryID,
+			Title:      p.Title,
+			Amount:     p.Amount,
+		}
+	}
+
+	return dto
 }
 
 type contactDTO struct {
@@ -253,13 +253,13 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 
 	area := order.ShippingOptionID
 	deliveryType := shippingTypeDelivery
-	shippingPromo := shippingPromo4Plus1
+	shippingPromo := promo4Plus1
 
 	switch order.ShippingOptionID {
 	case SelfPickup:
 		area = ""
 		deliveryType = shippingTypeSelfPickup
-		shippingPromo = shippingPromoSelfPickup
+		shippingPromo = promoSelfPickup
 	case SelfPickup4Plus1:
 		area = ""
 		deliveryType = shippingTypeSelfPickup
