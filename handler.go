@@ -49,7 +49,7 @@ func NewHandler(cfg *config.Config, log logger.Logger, bot *telego.Bot, bh *th.B
 		data:       textData,
 		orderStore: &memkey.Store[string]{},
 		delivery:   delivery,
-		syodo:      NewSyodoService(cfg),
+		syodo:      NewSyodoService(cfg, log),
 	}
 }
 

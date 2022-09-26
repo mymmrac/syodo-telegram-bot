@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/valyala/fasthttp"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
+	"github.com/mymmrac/syodo-telegram-bot/logger"
 )
 
 const (
@@ -29,17 +31,19 @@ const (
 // SyodoService represents a type to interact with Syodo API
 type SyodoService struct {
 	cfg      *config.Config
+	log      logger.Logger
 	client   *fasthttp.Client
 	timezone *time.Location
 }
 
 // NewSyodoService creates new SyodoService
-func NewSyodoService(cfg *config.Config) *SyodoService {
+func NewSyodoService(cfg *config.Config, log logger.Logger) *SyodoService {
 	loc, err := time.LoadLocation("Europe/Kiev")
 	assert(err == nil, fmt.Errorf("load timezone: %w", err))
 
 	return &SyodoService{
 		cfg:      cfg,
+		log:      log,
 		client:   &fasthttp.Client{},
 		timezone: loc,
 	}
@@ -248,7 +252,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	}
 
 	checkoutReq := checkoutRequest{
-		Description: fmt.Sprintf("Замовлення з Telegram: %s, %s",
+		Description: fmt.Sprintf("Замовлення з Telegram: %s, #%s",
 			time.Now().In(s.timezone).Format("2006-01-02 15:04"), order.OrderID),
 		Currency: currency,
 		Language: "ua",
@@ -284,6 +288,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	if err != nil {
 		return fmt.Errorf("decode data: %w", err)
 	}
+	s.log.Debugf("Checkout data: %s", string(data))
 
 	var checkout checkoutDTO
 	if err = json.Unmarshal(data, &checkout); err != nil {
@@ -291,7 +296,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	}
 
 	order.ExternalOrderID = checkout.OrderID
-	order.OrderURL = checkout.ResultURL
+	order.OrderURL = strings.Replace(checkout.ResultURL, "APP_LIQ_PAY_RESULT_URL", s.cfg.App.SyodoResultURL, 1)
 	order.TotalAmount = checkout.Amount
 
 	return nil
