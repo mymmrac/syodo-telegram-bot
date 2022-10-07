@@ -145,7 +145,7 @@ func (s *SyodoService) CalculatePriceSelfPickup(order OrderDetails, promotion st
 
 func (s *SyodoService) calculatePrice(order OrderDetails, shippingType string, zone DeliveryZone, promotion string,
 ) (int, error) {
-	requestOrder := orderToDTO(order) // TODO: Pass already converted
+	requestOrder := orderToDTO(order)
 
 	priceReq := &priceRequest{
 		Order: requestOrder,

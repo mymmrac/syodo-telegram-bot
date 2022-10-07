@@ -263,7 +263,6 @@ func checkIf4Plus1(products []OrderProduct) bool {
 
 	count := 0
 	for _, product := range products {
-		// TODO: Think how to exclude sets and only count roles
 		if product.CategoryID == "7" || product.CategoryID == "14" { // Роли, Без лактози
 			count += product.Amount
 

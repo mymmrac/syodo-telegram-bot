@@ -91,11 +91,13 @@ function checkOutOfTime() {
   if (dateNow.getHours() < 10 ||
       (dateNow.getHours() >= 22) || (dateNow.getHours() == 21 && dateNow.getMinutes() >= 45)) {
     outOfTime.value = true
-    showOutOfDate.value = true
   }
 }
 
 checkOutOfTime()
+if (outOfTime.value) {
+  showOutOfDate.value = true
+}
 
 // Products
 syodoAPI.get<Products>("/products")
