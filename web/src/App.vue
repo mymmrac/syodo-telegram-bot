@@ -86,12 +86,16 @@ watch(loaded, (isLoaded) => {
 
 const showOutOfDate: Ref<boolean> = ref(false)
 
-let dateNow = new Date()
-if (dateNow.getHours() < 10 ||
-    (dateNow.getHours() >= 22) || (dateNow.getHours() == 21 && dateNow.getMinutes() >= 45)) {
-  outOfTime.value = true
-  showOutOfDate.value = true
+function checkOutOfTime() {
+  let dateNow = new Date()
+  if (dateNow.getHours() < 10 ||
+      (dateNow.getHours() >= 22) || (dateNow.getHours() == 21 && dateNow.getMinutes() >= 45)) {
+    outOfTime.value = true
+    showOutOfDate.value = true
+  }
 }
+
+checkOutOfTime()
 
 // Products
 syodoAPI.get<Products>("/products")
@@ -125,6 +129,8 @@ watch(order, () => {
       return
     }
 
+    checkOutOfTime()
+
     if (outOfTime.value) {
       tg.MainButton.disable()
       tg.MainButton.setText("На жали ми зараз не працюємо")
@@ -149,6 +155,8 @@ watch(order, () => {
 }, { deep: true })
 
 tg.MainButton.onClick(() => {
+  checkOutOfTime()
+
   if (!checkout.value) {
     checkout.value = true
     scrollToTop()
