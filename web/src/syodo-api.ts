@@ -6,7 +6,7 @@ const syodoAPI = axios.create({
     headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        "x-api-key": "yjhlMaWbxb412floOKrhfaJWiAO9OFh21RTq9X9o",
+        "x-api-key": __SYODO_API_TOKEN__,
     },
 })
 

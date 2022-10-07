@@ -7,4 +7,5 @@ declare module "*.vue" {
 }
 
 declare const __SYODO_API__: string
+declare const __SYODO_API_TOKEN__: string
 declare const __BOT_API__: string
