@@ -29,6 +29,8 @@ const (
 
 	promo4Plus1     = "4+1"
 	promoSelfPickup = "Самовивіз"
+
+	shippingDivider = "_promo_"
 )
 
 // SyodoService represents a type to interact with Syodo API
@@ -251,10 +253,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 
 	requestOrder := orderToDTO(*order)
 
-	area := order.ShippingOptionID
-	deliveryType := shippingTypeDelivery
-	shippingPromo := promo4Plus1
-
+	var area, deliveryType, shippingPromo string
 	switch order.ShippingOptionID {
 	case SelfPickup:
 		area = ""
@@ -263,6 +262,18 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	case SelfPickup4Plus1:
 		area = ""
 		deliveryType = shippingTypeSelfPickup
+		shippingPromo = promo4Plus1
+	default:
+		deliveryType = shippingTypeDelivery
+		parts := strings.Split(order.ShippingOptionID, shippingDivider)
+		if len(parts) == 2 {
+			area = parts[0]
+			if parts[1] == promo4Plus1 {
+				shippingPromo = promo4Plus1
+			}
+		} else {
+			area = order.ShippingOptionID
+		}
 	}
 
 	checkoutReq := checkoutRequest{

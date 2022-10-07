@@ -230,7 +230,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 
 	if isPromo4Plus1 {
 		options = append(options,
-			tu.ShippingOption(zone, "Доставка курєром (акція 4+1)",
+			tu.ShippingOption(zone+shippingDivider+promo4Plus1, "Доставка курєром (акція 4+1)",
 				tu.LabeledPrice(labelByZone(zone)+" (акція 4+1)", priceDelivery),
 			),
 			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
