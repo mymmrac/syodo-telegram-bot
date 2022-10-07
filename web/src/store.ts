@@ -7,6 +7,7 @@ import { insert } from "@/utils"
 export const useGlobalStore = defineStore("global", {
     state: () => ({
         loaded: false,
+        outOfTime: false,
 
         allProducts: <Products>[],
         order: <Order>{

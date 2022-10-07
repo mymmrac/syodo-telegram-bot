@@ -24,6 +24,17 @@
 
   <div class="h-[96px]"></div>
   <go-to-top-button/>
+
+  <div v-if="showOutOfDate" class="z-50 fixed top-0 bottom-0 left-0 right-0 overflow-y-scroll bg-gray-500/75 p-8"
+       @click="showOutOfDate = false">
+    <div class="bg-tg-bg rounded shadow p-2 m-card" @click.stop>
+      <div class="text-center py-16">
+        <p class="text-xl mb-8">Вибачте, але ми зараз не працюємо.</p>
+        <p>Ми з радістю приготуємо Ваше замовлення щодня з 10:00 по 21:45</p>
+      </div>
+      <button class="w-full m-btn mt-2" @click="showOutOfDate = false">Закрити</button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -61,7 +72,7 @@ onMounted(() => {
 })
 
 const store = useGlobalStore()
-const { loaded, allProducts, search, order } = storeToRefs(store)
+const { loaded, allProducts, search, order, outOfTime } = storeToRefs(store)
 
 // Loaders
 watch(loaded, (isLoaded) => {
@@ -72,6 +83,15 @@ watch(loaded, (isLoaded) => {
   console.log("Loaded")
   tg.ready()
 })
+
+const showOutOfDate: Ref<boolean> = ref(false)
+
+let dateNow = new Date()
+if (dateNow.getHours() < 10 ||
+    (dateNow.getHours() >= 22) || (dateNow.getHours() == 21 && dateNow.getMinutes() >= 45)) {
+  outOfTime.value = true
+  showOutOfDate.value = true
+}
 
 // Products
 syodoAPI.get<Products>("/products")
@@ -105,12 +125,20 @@ watch(order, () => {
       return
     }
 
-    tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
+    if (outOfTime.value) {
+      tg.MainButton.disable()
+      tg.MainButton.setText("На жали ми зараз не працюємо")
+    } else {
+      tg.MainButton.enable()
+      tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
+    }
+
     tg.enableClosingConfirmation()
     return
   }
 
   if (!store.isOrderEmpty) {
+    tg.MainButton.enable()
     tg.MainButton.setText("Переглянути замовлення")
     tg.MainButton.show()
     tg.enableClosingConfirmation()
@@ -126,9 +154,17 @@ tg.MainButton.onClick(() => {
     scrollToTop()
 
     tg.BackButton.show()
-    tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
+    if (outOfTime.value) {
+      tg.MainButton.disable()
+      tg.MainButton.setText("На жали ми зараз не працюємо")
+    } else {
+      tg.MainButton.enable()
+      tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
+    }
   } else {
-    confirmOrder()
+    if (!outOfTime.value) {
+      confirmOrder()
+    }
   }
 })
 
@@ -137,6 +173,7 @@ tg.BackButton.onClick(() => {
   scrollToTop()
 
   tg.BackButton.hide()
+  tg.MainButton.enable()
   tg.MainButton.setText("Переглянути замовлення")
 })
 
