@@ -102,7 +102,10 @@ func (s *SyodoService) call(path, method, contentType string, data []byte, resul
 	}
 
 	if result != nil {
-		if err = json.Unmarshal(resp.Body(), result); err != nil {
+		body := resp.Body()
+		s.log.Debugf("Request to %q: data: %s, response %s", path, string(data), string(body))
+
+		if err = json.Unmarshal(body, result); err != nil {
 			return fmt.Errorf("decode result: %w", err)
 		}
 	}
