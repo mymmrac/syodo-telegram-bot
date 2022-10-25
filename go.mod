@@ -11,7 +11,7 @@ require (
 	github.com/kataras/golog v0.1.7
 	github.com/mymmrac/memkey v0.2.0
 	github.com/mymmrac/telego v0.16.1
-	github.com/valyala/fasthttp v1.40.0
+	github.com/valyala/fasthttp v1.41.0
 	googlemaps.github.io/maps v1.3.2
 )
 
