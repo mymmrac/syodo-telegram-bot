@@ -113,16 +113,16 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 	prices := make([]telego.LabeledPrice, 0, len(order.Products))
 	for _, p := range order.Products {
 		prices = append(prices, telego.LabeledPrice{
-			Label:  fmt.Sprintf("%s %d 𐄂 %s", emojiByCategoryID(p.CategoryID), p.Amount, p.Title),
+			Label:  fmt.Sprintf("%s %d ✕ %s", emojiByCategoryID(p.CategoryID), p.Amount, p.Title),
 			Amount: p.Amount * p.Price,
 		})
 	}
 
 	if order.CutleryCount > 0 {
-		prices = append(prices, tu.LabeledPrice(fmt.Sprintf("🥢 %d 𐄂 Прибори", order.CutleryCount), 0))
+		prices = append(prices, tu.LabeledPrice(fmt.Sprintf("🥢 %d ✕ Прибори", order.CutleryCount), 0))
 	}
 	if order.TrainingCutleryCount > 0 {
-		prices = append(prices, tu.LabeledPrice(fmt.Sprintf("🥢 %d 𐄂 Навчальні прибори", order.TrainingCutleryCount), 0))
+		prices = append(prices, tu.LabeledPrice(fmt.Sprintf("🥢 %d ✕ Навчальні прибори", order.TrainingCutleryCount), 0))
 	}
 	if !order.NoNapkins {
 		prices = append(prices, tu.LabeledPrice("🧻 Серветки", 0))
