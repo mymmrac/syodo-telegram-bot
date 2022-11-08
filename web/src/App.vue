@@ -71,6 +71,7 @@ tg.onEvent("themeChanged", updateColorScheme)
 onMounted(() => {
   updateColorScheme()
 })
+tg.MainButton.setParams({ color: "#bb4347", text_color: "#ffffff" })
 
 const store = useGlobalStore()
 const { loaded, allProducts, search, order, outOfTime } = storeToRefs(store)

@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-lg p-2 shadow-xl flex flex-col justify-between">
-    <div class="aspect-square rounded bg-white grid place-content-center cursor-pointer" @click="showDetails = true">
-      <img :src="getImage(product)" :alt="usedProduct.title" class="rounded-lg shadow mb-3">
+    <div class="aspect-square rounded grid place-content-center" @click="showDetails = true">
+      <img :src="getImage(product)" :alt="usedProduct.title" class="rounded-lg shadow bg-white cursor-pointer mb-3">
     </div>
     <div>
       <p @click="showDetails = true">{{ usedProduct.title }}</p>
