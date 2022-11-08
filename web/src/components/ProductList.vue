@@ -5,7 +5,7 @@
            class="grid grid-cols-3 gap-2 col-span-2">
         <div v-for="subCategory in subCategories" :key="subCategory.id"
              @click="scrollToID(`sub-category-${subCategory.id}`)"
-             class="cursor-pointer bg-tg-button text-tg-button-text rounded text-center shadow">
+             class="cursor-pointer bg-tg-button text-tg-button-text rounded-lg h-8 grid place-content-center text-center shadow">
           {{ subCategory.title }}
         </div>
       </div>
@@ -20,6 +20,9 @@
           <p class="border-b-2 border-tg-hint pt-2 pb-1 text-xl">{{ item.title }}</p>
         </div>
       </template>
+      <div v-if="!store.isSearchEmpty" class="col-span-2 text-tg-text text-sm text-center px-4">
+        Якщо Ви не знайшли того що шукали, завжди можна спробувати щось інше :)
+      </div>
     </transition-group>
   </div>
 </template>

@@ -2,18 +2,19 @@
   <transition name="m-fade" mode="out-in">
     <div v-show="!checkout">
       <category-list/>
-      <div class="w-full px-2 pb-2 flex gap-2">
-        <input type="text" placeholder="Пошук..." @input="updateSearch" :value="search"
-               class="p-2 flex-1 rounded border-none ring-0 focus:ring-0 bg-tg-button text-tg-button-text placeholder-tg-button-text shadow">
-        <button class="rounded px-2 shadow" @click="store.clearSearch">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-               class="bi bi-backspace-fill" viewBox="0 0 16 16">
-            <path
-                d="M15.683 3a2 2 0 0 0-2-2h-7.08a2 2 0 0 0-1.519.698L.241 7.35a1 1 0 0 0 0 1.302l4.843 5.65A2 2 0 0 0 6.603 15h7.08a2 2 0 0 0 2-2V3zM5.829 5.854a.5.5 0 1 1 .707-.708l2.147 2.147 2.146-2.147a.5.5 0 1 1 .707.708L9.39 8l2.146 2.146a.5.5 0 0 1-.707.708L8.683 8.707l-2.147 2.147a.5.5 0 0 1-.707-.708L7.976 8 5.829 5.854z"/>
-          </svg>
-        </button>
+      <div class="w-full px-2 pb-2 my-1">
+        <div class="rounded-lg shadow-lg flex gap-2">
+          <input type="text" placeholder="Пошук..." @input="updateSearch" :value="search"
+                 class="p-2 flex-1 rounded-lg border-none ring-0 focus:ring-0 bg-tg-bg text-tg-text placeholder-tg-text text-sm">
+          <button class="rounded-lg px-2" @click="store.clearSearch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x"
+                 viewBox="0 0 16 16">
+              <path
+                  d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </button>
+        </div>
       </div>
-      <hr>
       <product-list/>
     </div>
   </transition>

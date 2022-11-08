@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+/** @type {import("tailwindcss").Config} */
 module.exports = {
     darkMode: "class",
     content: [
@@ -12,8 +12,8 @@ module.exports = {
                 "tg-text": "var(--tg-theme-text-color, #222222)",
                 "tg-hint": "var(--tg-theme-hint-color, #a8a8a8)",
                 "tg-link": "var(--tg-theme-link-color, #2678b6)",
-                "tg-button": "var(--tg-theme-button-color, #50a8eb)",
-                "tg-button-text": "var(--tg-theme-button-text-color, #ffffff)",
+                "tg-button": "#bb4347",
+                "tg-button-text": "#ffffff",
                 "tg-secondary-bg": "var(--tg-theme-secondary-bg-color, #f0f0f0)",
             },
         },

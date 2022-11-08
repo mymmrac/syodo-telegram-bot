@@ -1,7 +1,7 @@
 <template>
-  <div class="rounded p-2 border border-tg-hint shadow flex flex-col justify-between">
+  <div class="rounded-lg p-2 shadow-xl flex flex-col justify-between">
     <div class="aspect-square rounded bg-white grid place-content-center cursor-pointer" @click="showDetails = true">
-      <img :src="getImage(product)" :alt="usedProduct.title" class="rounded">
+      <img :src="getImage(product)" :alt="usedProduct.title" class="rounded-lg shadow mb-3">
     </div>
     <div>
       <p @click="showDetails = true">{{ usedProduct.title }}</p>
@@ -26,14 +26,13 @@
           <hr>
           <p class="">{{ product.description }}</p>
           <div v-if="linkedProduct && linkedProduct.category_id === noLactoseCategory" class="mt-2 box-border">
-            <button class="w-full m-btn-no-padding"
-                    :class="useLinkedProduct ? 'py-1' : 'h-[32px] text-tg-text bg-tg-bg border-2 border-tg-button'"
-                    @click="useLinkedProduct = !useLinkedProduct">
+            <label class="flex justify-start items-center gap-2">
+              <input type="checkbox" class="m-checkbox" v-model="useLinkedProduct">
               Без лактози
-            </button>
+            </label>
           </div>
           <add-remove-buttons class="mt-2" :amount="amount" :add="add" :remove="remove"/>
-          <button class="w-full m-btn mt-2" @click="showDetails = false">Закрити</button>
+          <button class="w-full m-btn-big mt-2" @click="showDetails = false">Закрити</button>
         </div>
       </div>
     </transition>

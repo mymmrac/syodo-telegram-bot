@@ -17,7 +17,7 @@ html {
 }
 
 button {
-  @apply bg-tg-button text-tg-button-text;
+  @apply bg-tg-bg text-tg-text;
 }
 
 button, a, image, div {
@@ -30,13 +30,13 @@ hr {
 }
 
 .m-btn {
-  @apply py-1 px-2 rounded shadow;
+  @apply w-8 h-8 rounded-lg bg-tg-button text-tg-button-text;
 }
 
-.m-btn-no-padding {
-  @apply px-2 rounded shadow;
+.m-btn-big {
+  @apply h-8 rounded-lg shadow-lg bg-tg-button text-tg-button-text;
 }
 
 .m-checkbox {
-  @apply form-checkbox rounded focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200;
+  @apply form-checkbox rounded-lg focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200 cursor-pointer;
 }
