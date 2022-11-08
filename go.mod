@@ -4,14 +4,14 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.0
-	github.com/fasthttp/router v1.4.12
+	github.com/fasthttp/router v1.4.13
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/golog v0.1.7
 	github.com/mymmrac/memkey v0.2.0
-	github.com/mymmrac/telego v0.16.1
-	github.com/valyala/fasthttp v1.40.0
+	github.com/mymmrac/telego v0.17.1
+	github.com/valyala/fasthttp v1.41.0
 	googlemaps.github.io/maps v1.3.2
 )
 
@@ -22,13 +22,13 @@ require (
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/kataras/pio v0.0.10 // indirect
-	github.com/klauspost/compress v1.15.9 // indirect
+	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.opencensus.io v0.22.3 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 )
