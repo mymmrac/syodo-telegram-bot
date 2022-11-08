@@ -248,7 +248,11 @@ type checkoutDTO struct {
 	Alg                string  `json:"alg"`
 }
 
+const shippingOptionsParts = 2
+
 // Checkout registers order in Syodo services
+//
+//nolint:cyclop
 func (s *SyodoService) Checkout(order *OrderDetails) error {
 	if order == nil {
 		return errors.New("nil order checkout")
@@ -269,7 +273,7 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 	default:
 		deliveryType = shippingTypeDelivery
 		parts := strings.Split(order.ShippingOptionID, shippingDivider)
-		if len(parts) == 2 {
+		if len(parts) == shippingOptionsParts {
 			area = parts[0]
 			if parts[1] == promo4Plus1 {
 				shippingPromo = promo4Plus1
