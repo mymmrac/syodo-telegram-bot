@@ -1,10 +1,10 @@
 <template>
   <transition-group tag="div" name="m-buttons-fade" class="relative h-8">
-    <button v-if="amount === 0" :class="fixedSize ? 'w-24' : 'w-full'" class="m-btn-big" @click="add">Додати</button>
+    <button v-if="amount === 0" :class="fixedSize ? 'w-24' : 'w-full'" class="m-btn-big pb-1" @click="add">Додати</button>
     <div v-else class="flex justify-around items-center shadow rounded-lg bg-tg-button text-tg-button-text text-lg">
       <button :class="fixedSize ? 'w-8' : 'flex-1'" class="m-btn" @click="removeInternal">-</button>
       <transition tag="template" name="m-text-fade" mode="out-in">
-        <div :key="amount" class="text-center w-8 transition duration-200">{{ amount }}</div>
+        <div :key="amount" class="text-center w-8 transition duration-200 h-7">{{ amount }}</div>
       </transition>
       <button :class="fixedSize ? 'w-8' : 'flex-1'" class="m-btn" @click="addInternal">+</button>
     </div>

@@ -237,7 +237,7 @@ function confirmOrder() {
     noNapkins: order.value.noNapkins,
     cutleryCount: order.value.cutleryCount,
     trainingCutleryCount: order.value.trainingCutleryCount,
-    comment: order.value.addComment ? order.value.comment : "",
+    comment: order.value.comment,
   }
 
   botAPI.post("/order", finalOrder)

@@ -22,7 +22,7 @@ export function getImage(product: Product): string {
 }
 
 export function priceToText(price: number): string {
-    return (price / 100).toFixed(2) + "грн"
+    return (price / 100).toFixed(2) + " грн"
 }
 
 export function getPrice(product: Product): string {
@@ -55,7 +55,6 @@ export type Order = {
     noNapkins: boolean
     cutleryCount: number
     trainingCutleryCount: number
-    addComment: boolean
     comment: string
 }
 

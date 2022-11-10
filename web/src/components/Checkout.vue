@@ -9,7 +9,12 @@
               <img :src="getImage(originalProduct(orderProduct.product))" :alt="orderProduct.product.title"
                    class="rounded">
             </div>
-            <div class="flex-1 truncate" :title="orderProduct.product.title">{{ orderProduct.product.title }}</div>
+            <div class="flex-1 flex flex-col" :title="orderProduct.product.title">
+              <span class="truncate">{{ orderProduct.product.title }}</span>
+              <span class="text-sm -mb-1">{{
+                  priceToText(Number(orderProduct.product.price) * orderProduct.amount)
+                }}</span>
+            </div>
             <add-remove-buttons fixed-size :amount="orderProduct.amount" :add="() => addProduct(orderProduct)"
                                 :remove="() => removeProduct(orderProduct)"/>
           </div>
@@ -28,24 +33,18 @@
       <div class="flex justify-start gap-2">
         <add-remove-buttons fixed-size :amount="order.cutleryCount" :add="() => { order.cutleryCount++ }"
                             :remove="() => { order.cutleryCount-- }"/>
-        <div class="flex-1">Кількість приборів</div>
+        <div class="flex-1">Звичайні прибори</div>
       </div>
       <div class="flex justify-start gap-2">
         <add-remove-buttons fixed-size :amount="order.trainingCutleryCount"
                             :add="() => { order.trainingCutleryCount++ }"
                             :remove="() => { order.trainingCutleryCount-- }"/>
-        <div class="flex-1">Кількість навчальних приборів</div>
+        <div class="flex-1">Навчальні прибори</div>
       </div>
-      <label class="flex justify-start gap-2">
-        <input type="checkbox" class="m-checkbox" v-model="order.addComment">
-        Додати коментар до замовлення
-      </label>
-      <transition name="m-fade">
-        <textarea
-            class="form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg resize-none"
-            placeholder="Коментар до замовлення..." rows="3" v-show="order.addComment"
-            @input="updateComment"></textarea>
-      </transition>
+      <textarea
+          class="form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg resize-none"
+          placeholder="Коментар до замовлення..." rows="3"
+          @input="updateComment"></textarea>
     </div>
   </div>
 </template>
@@ -55,7 +54,7 @@ import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
 import { storeToRefs } from "pinia"
 
 import { useGlobalStore } from "@/store"
-import { getImage, OrderProduct, Product } from "@/types"
+import { getImage, priceToText, OrderProduct, Product } from "@/types"
 
 const store = useGlobalStore()
 const { order } = storeToRefs(store)

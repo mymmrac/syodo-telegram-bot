@@ -16,7 +16,6 @@ export const useGlobalStore = defineStore("global", {
             noNapkins: false,
             cutleryCount: 1,
             trainingCutleryCount: 0,
-            addComment: false,
             comment: "",
         },
 

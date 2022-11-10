@@ -202,7 +202,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 
 	wg.Add(1)
 	go func() {
-		wg.Done()
+		defer wg.Done()
 
 		deliveryPromo := ""
 		if isPromo4Plus1 {
@@ -216,7 +216,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	if isPromo4Plus1 {
 		wg.Add(1)
 		go func() {
-			wg.Done()
+			defer wg.Done()
 			priceSelfPickup4Plus1, priceSelfPickup4Plus1Err = h.syodo.CalculatePriceSelfPickup(order, promo4Plus1)
 		}()
 	}
