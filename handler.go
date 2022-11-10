@@ -298,8 +298,7 @@ func (h *Handler) failShipping(queryID, failureReason string) {
 }
 
 func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
-	_, ok := DeliveryMethodIDs[query.ShippingOptionID]
-	if !ok {
+	if query.ShippingOptionID == "" {
 		h.log.Errorf("Unknown delivery method: %s", query.ShippingOptionID)
 		h.failPreCheckout(query.ID, h.data.Text("orderDeliveryError"))
 		return

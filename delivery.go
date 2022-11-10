@@ -30,15 +30,6 @@ const SelfPickup = "self_pickup"
 // SelfPickup4Plus1 represents self pickup delivery method with 4+1 promotion
 const SelfPickup4Plus1 = "self_pickup_4_plus_1"
 
-// DeliveryMethodIDs lists all delivery methods
-var DeliveryMethodIDs = map[string]struct{}{
-	ZoneGreen:        {},
-	ZoneYellow:       {},
-	ZoneRed:          {},
-	SelfPickup:       {},
-	SelfPickup4Plus1: {},
-}
-
 // DeliveryStrategy represents model of calculation delivery zones by addresses
 type DeliveryStrategy struct {
 	cfg    *config.Config
