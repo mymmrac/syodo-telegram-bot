@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/fasthttp/router"
 	"github.com/mymmrac/memkey"
@@ -20,7 +19,6 @@ import (
 
 const (
 	currency      = "UAH"
-	orderTTL      = time.Hour * 4
 	orderKeyBound = 1_000_000
 )
 
@@ -379,6 +377,8 @@ func (h *Handler) successPayment(bot *telego.Bot, message telego.Message) {
 		}
 		return
 	}
+
+	h.orderStore.Delete(payment.InvoicePayload)
 
 	_, err := bot.SendMessage(tu.Message(tu.ID(chatID), h.data.Temp("successPayment", order)).
 		WithParseMode(telego.ModeHTML))

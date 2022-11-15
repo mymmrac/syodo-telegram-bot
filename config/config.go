@@ -87,6 +87,7 @@ type Settings struct {
 	LongPullingTimeout int           `validate:"gte=0"`
 	RequestTimeout     time.Duration `validate:"gt=0"`
 	TestMode           bool          `validate:"-"`
+	OrderTTL           time.Duration `validate:"gt=0"`
 }
 
 // App represents business logic settings

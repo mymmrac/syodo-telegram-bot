@@ -11,6 +11,7 @@ webhookURL = "https://mymm.gq/syodo-bot"
 longPullingTimeout = 4
 requestTimeout = "10s"
 testMode = true
+orderTTL = "30m"
 
 [app]
 webAppURL = "https://mymm.gq/syodo"

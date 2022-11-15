@@ -66,7 +66,7 @@ func (h *Handler) updateOrder(order OrderDetails) {
 }
 
 func (h *Handler) invalidateOldOrders() {
-	ttlTime := time.Now().UTC().Add(-orderTTL)
+	ttlTime := time.Now().UTC().Add(-h.cfg.Settings.OrderTTL)
 
 	for _, e := range memkey.Entries[OrderDetails](h.orderStore) {
 		if ttlTime.After(e.Value.CreatedAt) {
