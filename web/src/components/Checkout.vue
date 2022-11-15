@@ -9,7 +9,7 @@
               <img :src="getImage(originalProduct(orderProduct.product))" :alt="orderProduct.product.title"
                    class="rounded">
             </div>
-            <div class="flex-1 flex flex-col" :title="orderProduct.product.title">
+            <div class="flex-1 flex flex-col truncate" :title="orderProduct.product.title">
               <span class="truncate">{{ orderProduct.product.title }}</span>
               <span class="text-sm -mb-1">{{
                   priceToText(Number(orderProduct.product.price) * orderProduct.amount)

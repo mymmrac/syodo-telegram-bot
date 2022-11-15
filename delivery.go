@@ -24,10 +24,10 @@ const (
 	ZoneRed     DeliveryZone = "red"
 )
 
-// SelfPickup represents self pickup delivery method with -10% promotion
+// SelfPickup represents self-pickup delivery method with -10% promotion
 const SelfPickup = "self_pickup"
 
-// SelfPickup4Plus1 represents self pickup delivery method with 4+1 promotion
+// SelfPickup4Plus1 represents self-pickup delivery method with 4+1 promotion
 const SelfPickup4Plus1 = "self_pickup_4_plus_1"
 
 // DeliveryStrategy represents model of calculation delivery zones by addresses

@@ -76,3 +76,8 @@ successPaymentOrderFailedError = """
 
 Зв'яжіться з адміністрацією за контактами зазначеними тут /help
 """
+
+# Message that will be sent on unknown command or text
+unknownMessage = """
+Хмм, я не зрозумів Вас, спробуйте /start, або /help
+"""

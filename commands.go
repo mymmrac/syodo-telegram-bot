@@ -44,3 +44,10 @@ func (h *Handler) helpCmd(bot *telego.Bot, message telego.Message) {
 		h.log.Errorf("Send help message: %s", err)
 	}
 }
+
+func (h *Handler) unknown(bot *telego.Bot, message telego.Message) {
+	_, err := bot.SendMessage(tu.Message(tu.ID(message.Chat.ID), h.data.Text("unknownMessage")))
+	if err != nil {
+		h.log.Errorf("Send unknown message: %s", err)
+	}
+}

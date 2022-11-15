@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -83,10 +84,16 @@ func (h *Handler) RegisterHandlers() {
 	h.bh.HandleShippingQuery(h.shipping)
 	h.bh.HandlePreCheckoutQuery(h.preCheckout)
 	h.bh.HandleMessage(h.successPayment, th.SuccessPayment())
+	h.bh.HandleMessage(h.unknown)
 
 	h.rtr.POST("/order", func(ctx *fasthttp.RequestCtx) {
-		h.log.Infof("Received order request: `%s`", string(ctx.PostBody()))
+		h.log.Debugf("Received order request: `%s`", string(ctx.PostBody()))
 		h.orderHandler(ctx)
+	})
+
+	h.rtr.GET("/order", func(ctx *fasthttp.RequestCtx) {
+		//nolint:errcheck
+		_, _ = ctx.WriteString(strconv.Itoa(h.orderStore.Len()))
 	})
 }
 
@@ -231,7 +238,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	if isPromo4Plus1 {
 		options = append(options,
 			tu.ShippingOption(zone+shippingDivider+promo4Plus1, "Доставка курєром (акція 4+1)",
-				tu.LabeledPrice(labelByZone(zone)+" (акція 4+1)", priceDelivery),
+				tu.LabeledPrice(h.labelByZone(zone)+" (акція 4+1)", priceDelivery),
 			),
 			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
 				tu.LabeledPrice("👋 Самовивіз (акція -10%)", priceSelfPickup),
@@ -243,7 +250,7 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 	} else {
 		options = append(options,
 			tu.ShippingOption(zone, "Доставка курєром",
-				tu.LabeledPrice(labelByZone(zone), priceDelivery),
+				tu.LabeledPrice(h.labelByZone(zone), priceDelivery),
 			),
 			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
 				tu.LabeledPrice("👋 Самовивіз (акція -10%)", priceSelfPickup),
@@ -275,7 +282,7 @@ func checkIf4Plus1(products []OrderProduct) bool {
 	return false
 }
 
-func labelByZone(zone DeliveryZone) string {
+func (h *Handler) labelByZone(zone DeliveryZone) string {
 	switch zone {
 	case ZoneGreen:
 		return "🛵 Доставка у зелену зону"
@@ -285,6 +292,7 @@ func labelByZone(zone DeliveryZone) string {
 		return "🛵 Доставка у червону зону"
 	default:
 		// No shipping option
+		h.log.Errorf("Unknown zone: %q", zone)
 		return "<UNKNOWN>"
 	}
 }
