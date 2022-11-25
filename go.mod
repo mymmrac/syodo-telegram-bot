@@ -4,14 +4,14 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/fasthttp/router v1.4.13
+	github.com/fasthttp/router v1.4.14
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/golog v0.1.8
 	github.com/mymmrac/memkey v0.2.0
 	github.com/mymmrac/telego v0.17.1
-	github.com/valyala/fasthttp v1.41.0
+	github.com/valyala/fasthttp v1.42.0
 	googlemaps.github.io/maps v1.3.2
 )
 
