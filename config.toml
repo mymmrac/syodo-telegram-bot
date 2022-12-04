@@ -7,12 +7,12 @@ filename = "server.log"
 stopTimeout = "10s"
 useLongPulling = true
 serverHost = "localhost:8080"
-webhookURL = "https://mymm.gq/syodo-bot"
+webhookURL = "https://telegrambot.syodo.com.ua/syodo-bot"
 longPullingTimeout = 4
 requestTimeout = "10s"
 testMode = true
 orderTTL = "30m"
 
 [app]
-webAppURL = "https://mymm.gq/syodo"
+webAppURL = "https://telegrambot.syodo.com.ua/syodo"
 syodoAPIURL = "https://hjrc5e9go8.execute-api.eu-central-1.amazonaws.com/dev"

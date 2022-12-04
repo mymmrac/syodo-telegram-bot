@@ -25,13 +25,14 @@ deploy-web:
 	cd web && \
 	yarn build && \
  	zip -r dist.zip dist && \
- 	scp dist.zip ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
- 	ssh ubuntu@mymm.gq "cd syodo/ && rm -rf dist/ && unzip dist.zip"
+ 	scp dist.zip ubuntu@telegrambot.syodo.com.ua:/home/ubuntu/telegram/ && \
+ 	ssh ubuntu@telegrambot.syodo.com.ua "cd telegram/ && rm -rf dist/ && unzip dist.zip"
 
 deploy-bot: build
-	ssh ubuntu@mymm.gq "sudo systemctl stop syodo-bot" && \
-	scp text.toml ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
-	scp bin/syodo ubuntu@mymm.gq:/home/ubuntu/syodo/ && \
-    ssh ubuntu@mymm.gq "sudo systemctl start syodo-bot"
+	ssh ubuntu@telegrambot.syodo.com.ua "sudo systemctl stop syodo-telegram-bot" && \
+	scp text.toml ubuntu@telegrambot.syodo.com.ua:/home/ubuntu/telegram/ && \
+	scp bin/syodo ubuntu@telegrambot.syodo.com.ua:/home/ubuntu/telegram/ && \
+    ssh ubuntu@telegrambot.syodo.com.ua "sudo systemctl start syodo-telegram-bot"
 
 .PHONY: help lint lint-install lint-list test build deploy-web deploy-bot
+

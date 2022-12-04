@@ -33,7 +33,7 @@
         <p class="text-xl mb-8">Вибачте, але ми зараз не працюємо.</p>
         <p>Ми з радістю приготуємо Ваше замовлення щодня з 10:00 по 21:45</p>
       </div>
-      <button class="w-full m-btn mt-2" @click="showOutOfDate = false">Закрити</button>
+      <button class="w-full m-btn-big mt-2" @click="showOutOfDate = false">Закрити</button>
     </div>
   </div>
 </template>
