@@ -12,6 +12,7 @@ import (
 
 	"github.com/mymmrac/telego"
 	"github.com/valyala/fasthttp"
+	"googlemaps.github.io/maps"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
 	"github.com/mymmrac/syodo-telegram-bot/logger"
@@ -120,9 +121,14 @@ type orderDTO struct {
 	Amount     int    `json:"qty"`
 }
 
+type pointDTO struct {
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
+}
+
 type deliveryDTO struct {
-	Type string `json:"type"`
-	Zone string `json:"serviceArea"`
+	Type  string   `json:"type"`
+	Point pointDTO `json:"point,omitempty"`
 }
 
 type priceRequest struct {
@@ -132,39 +138,47 @@ type priceRequest struct {
 }
 
 type priceResponse struct {
-	Delivery int `json:"delivery"`
-	Discount int `json:"discount"`
+	Delivery    int    `json:"delivery"`
+	Discount    int    `json:"discount"`
+	ServiceArea string `json:"service_area"`
 }
 
 // CalculatePriceDelivery returns calculated price depending on order details and delivery zone
-func (s *SyodoService) CalculatePriceDelivery(order OrderDetails, zone DeliveryZone, promotion string) (int, error) {
-	return s.calculatePrice(order, shippingTypeDelivery, zone, promotion)
+func (s *SyodoService) CalculatePriceDelivery(
+	order OrderDetails, location maps.LatLng, promotion string,
+) (int, DeliveryZone, error) {
+	return s.calculatePrice(order, shippingTypeDelivery, location, promotion)
 }
 
 // CalculatePriceSelfPickup returns calculated price depending on order details
 func (s *SyodoService) CalculatePriceSelfPickup(order OrderDetails, promotion string) (int, error) {
-	return s.calculatePrice(order, shippingTypeSelfPickup, "", promotion)
+	price, _, err := s.calculatePrice(order, shippingTypeSelfPickup, maps.LatLng{}, promotion)
+	return price, err
 }
 
-func (s *SyodoService) calculatePrice(order OrderDetails, shippingType string, zone DeliveryZone, promotion string,
-) (int, error) {
+func (s *SyodoService) calculatePrice(
+	order OrderDetails, shippingType string, location maps.LatLng, promotion string,
+) (int, DeliveryZone, error) {
 	requestOrder := orderToDTO(order)
 
 	priceReq := &priceRequest{
 		Order: requestOrder,
 		DeliveryDetails: deliveryDTO{
 			Type: shippingType,
-			Zone: zone,
+			Point: pointDTO{
+				Lat: location.Lat,
+				Lng: location.Lng,
+			},
 		},
 		SelectedPromotion: promotion,
 	}
 
 	var priceResp priceResponse
 	if err := s.callJSON("/price", fasthttp.MethodPost, priceReq, &priceResp); err != nil {
-		return 0, fmt.Errorf("price API: %w", err)
+		return 0, ZoneUnknown, fmt.Errorf("price API: %w", err)
 	}
 
-	return priceResp.Delivery - priceResp.Discount, nil
+	return priceResp.Delivery - priceResp.Discount, priceResp.ServiceArea, nil
 }
 
 func orderToDTO(order OrderDetails) []orderDTO {

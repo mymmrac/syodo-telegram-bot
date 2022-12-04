@@ -214,8 +214,8 @@ func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
 			deliveryPromo = promo4Plus1
 		}
 
-		zone = h.delivery.CalculateZone(query.ShippingAddress)
-		priceDelivery, priceDeliveryErr = h.syodo.CalculatePriceDelivery(order, zone, deliveryPromo)
+		location := h.delivery.CalculateLocation(query.ShippingAddress)
+		priceDelivery, zone, priceDeliveryErr = h.syodo.CalculatePriceDelivery(order, location, deliveryPromo)
 	}()
 
 	if isPromo4Plus1 {
