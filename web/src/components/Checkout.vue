@@ -11,7 +11,7 @@
             </div>
             <div class="flex-1 flex flex-col truncate" :title="orderProduct.product.title">
               <span class="truncate">{{ orderProduct.product.title }}</span>
-              <span class="text-sm -mb-1">{{
+              <span class="text-sm">{{
                   priceToText(Number(orderProduct.product.price) * orderProduct.amount)
                 }}</span>
             </div>
