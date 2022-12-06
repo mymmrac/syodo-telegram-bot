@@ -9,7 +9,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/golog v0.1.8
 	github.com/mymmrac/memkey v0.2.0
-	github.com/mymmrac/telego v0.17.1
+	github.com/mymmrac/telego v0.18.0
 	github.com/valyala/fasthttp v1.43.0
 	googlemaps.github.io/maps v1.3.2
 )
@@ -28,6 +28,6 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.2.0 // indirect
 )
