@@ -58,7 +58,7 @@ const tg: TelegramWebApps.WebApp = window.Telegram.WebApp
 
 // Version check
 if (!tgVersionSupported("6.1")) {
-  showError("old-version", `Застаріла версія Telegram (v${ tg.version }), очікується щонайменше v6.1`)
+  showError("old-version", `Застаріла версія Telegram WebApp (v${ tg.version }), очікується щонайменше v6.1`)
   tg.close()
 }
 
@@ -106,7 +106,7 @@ syodoAPI.get<Products>("/products")
     .then(response => {
       if (response.status !== 200) {
         console.error(response)
-        showError("load-products", "Хмм, не вдалося завантажити меню", response.statusText)
+        showError("load-products", "Хмм, щось не так з меню", response.statusText)
         return
       }
       allProducts.value = response.data
@@ -243,7 +243,7 @@ function confirmOrder() {
   botAPI.post("/order", finalOrder)
       .then(response => {
         if (response.status !== 200) {
-          showError("order-status", "Хмм, не вдалося щось не так з замовленням", response.statusText)
+          showError("order-status", "Хмм, щось не так з замовленням", response.statusText)
           return
         }
 
