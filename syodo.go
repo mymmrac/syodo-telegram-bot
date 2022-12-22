@@ -201,16 +201,17 @@ type contactDTO struct {
 }
 
 type deliveryDetailsDTO struct {
-	Type        string `json:"type"`
-	Date        string `json:"date"`
-	Time        string `json:"time"`
-	DontCall    bool   `json:"dontCall"`
-	Comments    string `json:"comments"`
-	Address     string `json:"address"`
-	Entrance    string `json:"entrance"`
-	Apt         string `json:"apt"`
-	ECode       string `json:"eCode"`
-	ServiceArea string `json:"serviceArea"`
+	Type           string `json:"type"`
+	Date           string `json:"date"`
+	Time           string `json:"time"`
+	Comments       string `json:"comments"`
+	Address        string `json:"address"`
+	Entrance       string `json:"entrance"`
+	Apt            string `json:"apt"`
+	ECode          string `json:"eCode"`
+	ServiceArea    string `json:"serviceArea"`
+	PickupLocation string `json:"pickupLocation"`
+	DontCall       bool   `json:"dontCall"`
 }
 
 type paymentDTO struct {
@@ -297,6 +298,11 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 		}
 	}
 
+	pickupLocation := "1"
+	if deliveryType == shippingTypeDelivery {
+		pickupLocation = ""
+	}
+
 	checkoutReq := checkoutRequest{
 		Description: fmt.Sprintf("Замовлення з Telegram: %s, #%s",
 			time.Now().In(s.timezone).Format("2006-01-02 15:04"), order.OrderID),
@@ -307,14 +313,15 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			Phone: order.OrderInfo.PhoneNumber,
 		},
 		DeliveryDetails: deliveryDetailsDTO{
-			Type:        deliveryType,
-			DontCall:    order.Request.DoNotCall,
-			Comments:    order.Request.Comment,
-			Address:     constructAddress(order.OrderInfo.ShippingAddress),
-			Entrance:    "-",
-			Apt:         "-",
-			ECode:       "-",
-			ServiceArea: area,
+			Type:           deliveryType,
+			DontCall:       order.Request.DoNotCall,
+			Comments:       order.Request.Comment,
+			Address:        constructAddress(order.OrderInfo.ShippingAddress),
+			Entrance:       "-",
+			Apt:            "-",
+			ECode:          "-",
+			ServiceArea:    area,
+			PickupLocation: pickupLocation,
 		},
 		PaymentDetails: paymentDTO{
 			PaymentMethod: "Онлайн",
