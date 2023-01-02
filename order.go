@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/mymmrac/memkey"
-	"github.com/mymmrac/telego"
 )
 
 // OrderProduct represents a single item in order
@@ -27,21 +26,26 @@ type OrderRequest struct {
 	CutleryCount         int            `json:"cutleryCount"`
 	TrainingCutleryCount int            `json:"trainingCutleryCount"`
 	Comment              string         `json:"comment"`
+	Name                 string         `json:"name"`
+	Phone                string         `json:"phone"`
+	DeliveryType         string         `json:"deliveryType"`
+	Promotion            string         `json:"promotion"`
+	City                 string         `json:"city"`
+	Address              string         `json:"address"`
 }
 
 // OrderDetails represents full order info
 type OrderDetails struct {
-	OrderID          string            `json:"orderID"`
-	ExternalOrderID  string            `json:"externalOrderID"`
-	Request          OrderRequest      `json:"request"`
-	OrderInfo        *telego.OrderInfo `json:"orderInfo"`
-	ShippingOptionID string            `json:"shippingOptionID"`
-	OrderURL         string            `json:"orderURL"`
-	TotalAmount      float64           `json:"totalAmount"`
-	CreatedAt        time.Time         `json:"createdAt"`
+	OrderID         string       `json:"orderID"`
+	ExternalOrderID string       `json:"externalOrderID"`
+	Request         OrderRequest `json:"request"`
+	OrderURL        string       `json:"orderURL"`
+	ServiceArea     string       `json:"serviceArea"`
+	TotalAmount     float64      `json:"totalAmount"`
+	CreatedAt       time.Time    `json:"createdAt"`
 }
 
-func (h *Handler) storeOrder(order OrderRequest) string {
+func (h *Handler) storeOrder(order OrderRequest, area string) string {
 	var orderKey string
 	for orderKey == "" || h.orderStore.Has(orderKey) {
 		//nolint:gosec
@@ -49,9 +53,10 @@ func (h *Handler) storeOrder(order OrderRequest) string {
 	}
 
 	memkey.Set(h.orderStore, orderKey, OrderDetails{
-		OrderID:   orderKey,
-		Request:   order,
-		CreatedAt: time.Now().UTC(),
+		OrderID:     orderKey,
+		Request:     order,
+		ServiceArea: area,
+		CreatedAt:   time.Now().UTC(),
 	})
 
 	return orderKey

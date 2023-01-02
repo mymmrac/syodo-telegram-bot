@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"sync"
 
 	"github.com/fasthttp/router"
 	"github.com/mymmrac/memkey"
@@ -12,6 +11,7 @@ import (
 	th "github.com/mymmrac/telego/telegohandler"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"github.com/valyala/fasthttp"
+	"googlemaps.github.io/maps"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
 	"github.com/mymmrac/syodo-telegram-bot/logger"
@@ -79,7 +79,6 @@ func (h *Handler) RegisterHandlers() {
 
 	h.bh.HandleMessage(h.startCmd, th.CommandEqual("start"))
 	h.bh.HandleMessage(h.helpCmd, th.CommandEqual("help"))
-	h.bh.HandleShippingQuery(h.shipping)
 	h.bh.HandlePreCheckoutQuery(h.preCheckout)
 	h.bh.HandleMessage(h.successPayment, th.SuccessPayment())
 	h.bh.HandleMessage(h.unknown)
@@ -95,6 +94,7 @@ func (h *Handler) RegisterHandlers() {
 	})
 }
 
+//nolint:funlen,gocognit,cyclop
 func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 	data := ctx.PostBody()
 
@@ -112,9 +112,63 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	h.invalidateOldOrders()
-	orderKey := h.storeOrder(order)
+	if order.Name == "" || len(order.Phone) != 13 ||
+		(order.DeliveryType == deliveryTypeDelivery && (order.Address == "" || order.City == "")) {
+		h.log.Errorf("Bad order info: %+v", order)
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
 
+	var (
+		price    PriceResponse
+		location maps.LatLng
+	)
+
+	switch order.DeliveryType {
+	case deliveryTypeDelivery:
+		location, err = h.delivery.CalculateLocation(order)
+		if err != nil {
+			break
+		}
+
+		price, err = h.syodo.CalculatePriceDelivery(order.Products, location, order.Promotion)
+	case "self_pickup_1", "self_pickup_2":
+		price, err = h.syodo.CalculatePriceSelfPickup(order.Products, order.Promotion)
+	default:
+		h.log.Errorf("Unknown delivery type: %s", err)
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		h.log.Errorf("Calculate price: %s", err)
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		return
+	}
+
+	h.invalidateOldOrders()
+	orderKey := h.storeOrder(order, price.ServiceArea)
+
+	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
+		Title:         "Замовлення #" + orderKey,
+		Description:   h.data.Text("orderDescription"),
+		Payload:       orderKey,
+		ProviderToken: h.cfg.App.ProviderToken,
+		Currency:      currency,
+		Prices:        h.constructPrices(order, price),
+	})
+	if err != nil || link == nil || *link == "" {
+		h.log.Errorf("Create invoice link: %q, %s", link, err)
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		return
+	}
+
+	//nolint:errcheck
+	_, _ = ctx.WriteString(*link)
+	ctx.SetStatusCode(fasthttp.StatusOK)
+}
+
+func (h *Handler) constructPrices(order OrderRequest, price PriceResponse) []telego.LabeledPrice {
 	prices := make([]telego.LabeledPrice, 0, len(order.Products))
 	for _, p := range order.Products {
 		prices = append(prices, telego.LabeledPrice{
@@ -133,28 +187,20 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		prices = append(prices, tu.LabeledPrice("🧻 Серветки", 0))
 	}
 
-	link, err := h.bot.CreateInvoiceLink(&telego.CreateInvoiceLinkParams{
-		Title:                     "Замовлення #" + orderKey,
-		Description:               h.data.Text("orderDescription"),
-		Payload:                   orderKey,
-		ProviderToken:             h.cfg.App.ProviderToken,
-		Currency:                  currency,
-		Prices:                    prices,
-		NeedName:                  true,
-		NeedPhoneNumber:           true,
-		NeedShippingAddress:       true,
-		SendPhoneNumberToProvider: true,
-		IsFlexible:                true,
-	})
-	if err != nil || link == nil || *link == "" {
-		h.log.Errorf("Create invoice link: %q, %s", link, err)
-		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
-		return
+	if order.DeliveryType == deliveryTypeDelivery {
+		prices = append(prices, tu.LabeledPrice(h.labelByZone(price.ServiceArea), price.Delivery))
+	} else {
+		prices = append(prices, tu.LabeledPrice("👋 Самовивіз", price.Delivery))
 	}
 
-	//nolint:errcheck
-	_, _ = ctx.WriteString(*link)
-	ctx.SetStatusCode(fasthttp.StatusOK)
+	switch order.Promotion {
+	case promo4Plus1:
+		prices = append(prices, tu.LabeledPrice("🎟 Акція 4+1", price.Discount))
+	case promoSelfPickup:
+		prices = append(prices, tu.LabeledPrice("🎟 Самовивіз -10%", price.Discount))
+	}
+
+	return prices
 }
 
 func emojiByCategoryID(id string) string {
@@ -174,112 +220,6 @@ func emojiByCategoryID(id string) string {
 	}
 }
 
-func (h *Handler) shipping(bot *telego.Bot, query telego.ShippingQuery) {
-	order, ok := h.getOrder(query.InvoicePayload)
-	if !ok {
-		h.log.Errorf("Order not found: %s", query.InvoicePayload)
-		h.failShipping(query.ID, h.data.Text("orderNotFoundError"))
-		return
-	}
-
-	var (
-		wg      sync.WaitGroup
-		options []telego.ShippingOption
-
-		priceSelfPickup    int
-		priceSelfPickupErr error
-
-		priceSelfPickup4Plus1    int
-		priceSelfPickup4Plus1Err error
-
-		priceDelivery    int
-		priceDeliveryErr error
-		zone             DeliveryZone
-	)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		priceSelfPickup, priceSelfPickupErr = h.syodo.CalculatePriceSelfPickup(order, promoSelfPickup)
-	}()
-
-	isPromo4Plus1 := checkIf4Plus1(order.Request.Products)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		deliveryPromo := ""
-		if isPromo4Plus1 {
-			deliveryPromo = promo4Plus1
-		}
-
-		location := h.delivery.CalculateLocation(query.ShippingAddress)
-		priceDelivery, zone, priceDeliveryErr = h.syodo.CalculatePriceDelivery(order, location, deliveryPromo)
-	}()
-
-	if isPromo4Plus1 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			priceSelfPickup4Plus1, priceSelfPickup4Plus1Err = h.syodo.CalculatePriceSelfPickup(order, promo4Plus1)
-		}()
-	}
-
-	wg.Wait()
-	if priceDeliveryErr != nil || priceSelfPickupErr != nil || priceSelfPickup4Plus1Err != nil {
-		h.log.Errorf("Calculate price: %s, %s, %s", priceDeliveryErr, priceSelfPickupErr, priceSelfPickup4Plus1Err)
-		h.failShipping(query.ID, h.data.Text("calculateShippingPriceError"))
-		return
-	}
-
-	if isPromo4Plus1 {
-		options = append(options,
-			tu.ShippingOption(zone+shippingDivider+promo4Plus1, "Доставка курєром (акція 4+1)",
-				tu.LabeledPrice(h.labelByZone(zone)+" (акція 4+1)", priceDelivery),
-			),
-			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
-				tu.LabeledPrice("👋 Самовивіз (акція -10%)", priceSelfPickup),
-			),
-			tu.ShippingOption(SelfPickup4Plus1, "Самовивіз (акція 4+1)",
-				tu.LabeledPrice("👋 Самовивіз (акція 4+1)", priceSelfPickup4Plus1),
-			),
-		)
-	} else {
-		options = append(options,
-			tu.ShippingOption(zone, "Доставка курєром",
-				tu.LabeledPrice(h.labelByZone(zone), priceDelivery),
-			),
-			tu.ShippingOption(SelfPickup, "Самовивіз (акція -10%)",
-				tu.LabeledPrice("👋 Самовивіз (акція -10%)", priceSelfPickup),
-			),
-		)
-	}
-
-	err := bot.AnswerShippingQuery(tu.ShippingQuery(query.ID, true, options...))
-	if err != nil {
-		h.log.Errorf("Answer shipping: %s", err)
-		return
-	}
-}
-
-func checkIf4Plus1(products []OrderProduct) bool {
-	const promo4Plus1Count = 4
-
-	count := 0
-	for _, product := range products {
-		if product.CategoryID == "7" || product.CategoryID == "14" { // Роли, Без лактози
-			count += product.Amount
-
-			if count > promo4Plus1Count {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
 func (h *Handler) labelByZone(zone DeliveryZone) string {
 	switch zone {
 	case ZoneGreen:
@@ -295,37 +235,13 @@ func (h *Handler) labelByZone(zone DeliveryZone) string {
 	}
 }
 
-func (h *Handler) failShipping(queryID, failureReason string) {
-	err := h.bot.AnswerShippingQuery(tu.ShippingQuery(queryID, false).WithErrorMessage(failureReason))
-	if err != nil {
-		h.log.Errorf("Answer shipping (failure): %s", err)
-		return
-	}
-}
-
 func (h *Handler) preCheckout(bot *telego.Bot, query telego.PreCheckoutQuery) {
-	if query.ShippingOptionID == "" {
-		h.log.Errorf("Unknown delivery method: %s", query.ShippingOptionID)
-		h.failPreCheckout(query.ID, h.data.Text("orderDeliveryError"))
-		return
-	}
-
-	info := query.OrderInfo
-	if info == nil || info.ShippingAddress == nil || info.Name == "" || info.PhoneNumber == "" {
-		h.log.Errorf("Bad order info: %+v", info)
-		h.failPreCheckout(query.ID, h.data.Text("orderInfoError"))
-		return
-	}
-
 	order, ok := h.getOrder(query.InvoicePayload)
 	if !ok {
 		h.log.Errorf("Order not found: %s", query.InvoicePayload)
 		h.failPreCheckout(query.ID, h.data.Text("orderNotFoundError"))
 		return
 	}
-
-	order.OrderInfo = info
-	order.ShippingOptionID = query.ShippingOptionID
 
 	if err := h.syodo.Checkout(&order); err != nil {
 		h.log.Errorf("Checkout: %s", err)

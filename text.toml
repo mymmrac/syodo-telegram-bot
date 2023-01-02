@@ -39,20 +39,11 @@ menuButton = "Меню"
 # Error that is displayed if order was not found
 orderNotFoundError = "На жаль, ми не можемо знайти Ваше замовлення"
 
-# Error that is displayed if order was done with unexpected or empty delivery method
-orderDeliveryError = "На жаль, ми не знаємо, як доставити Ваше замовлення"
-
 # Error that is displayed if order was failed to checkout
 orderCheckoutError = "На жаль, ми не змогли оформити Ваше замовлення"
 
-# Error that is displayed if order is missing some info
-orderInfoError = "На жаль, ми не змогли отримати всю інформацію про Ваше замовлення"
-
 # Description of the order
 orderDescription = "SYODŌ – доставка японської кухні, що поважає деталі!"
-
-# Error that is displayed if calculating shipping price failed
-calculateShippingPriceError = "На жаль, ми не змогли визначити деталі доставки Вашого замовлення"
 
 # Success payment message, data: OrderDerails
 successPayment = """

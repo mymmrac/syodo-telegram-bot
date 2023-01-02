@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/mymmrac/telego"
 	"googlemaps.github.io/maps"
 
 	"github.com/mymmrac/syodo-telegram-bot/config"
@@ -17,17 +15,10 @@ type DeliveryZone = string
 
 // Defined delivery zones
 const (
-	ZoneUnknown DeliveryZone = ""
-	ZoneGreen   DeliveryZone = "green"
-	ZoneYellow  DeliveryZone = "yellow"
-	ZoneRed     DeliveryZone = "red"
+	ZoneGreen  DeliveryZone = "green"
+	ZoneYellow DeliveryZone = "yellow"
+	ZoneRed    DeliveryZone = "red"
 )
-
-// SelfPickup represents self-pickup delivery method with -10% promotion
-const SelfPickup = "self_pickup"
-
-// SelfPickup4Plus1 represents self-pickup delivery method with 4+1 promotion
-const SelfPickup4Plus1 = "self_pickup_4_plus_1"
 
 // DeliveryStrategy represents model of calculation delivery zones by addresses
 type DeliveryStrategy struct {
@@ -51,44 +42,35 @@ func NewDeliveryStrategy(cfg *config.Config, log logger.Logger) (*DeliveryStrate
 }
 
 // CalculateLocation returns delivery location by its address
-func (s *DeliveryStrategy) CalculateLocation(shipping telego.ShippingAddress) maps.LatLng {
-	country := strings.ToLower(shipping.CountryCode)
-	if country != "ua" {
-		s.log.Errorf("Calculate zone: non UA country: %s", country)
-		return maps.LatLng{}
-	}
-
+func (s *DeliveryStrategy) CalculateLocation(order OrderRequest) (maps.LatLng, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), s.cfg.Settings.RequestTimeout)
 	defer cancel()
 
 	results, err := s.client.Geocode(ctx, &maps.GeocodingRequest{
 		Components: map[maps.Component]string{
-			maps.ComponentCountry:            country,
-			maps.ComponentLocality:           shipping.City,
-			maps.ComponentAdministrativeArea: shipping.State,
-			maps.ComponentRoute:              strings.TrimSpace(shipping.StreetLine1 + " " + shipping.StreetLine2),
+			maps.ComponentCountry:  "ua",
+			maps.ComponentLocality: order.City,
+			maps.ComponentRoute:    order.Address,
 		},
 		Bounds:   approximateBounds,
-		Region:   strings.ToLower(shipping.CountryCode),
+		Region:   "ua",
 		Language: "uk",
 	})
 	if err != nil {
-		s.log.Errorf("Calculate zone: geocode for %+v, error: %s", shipping, err)
-		return maps.LatLng{}
+		return maps.LatLng{}, fmt.Errorf("geocode for %+v, error: %w", order, err)
 	}
 
 	if len(results) == 0 {
-		s.log.Debugf("Calculate zone: no address found for %+v", shipping)
-		return maps.LatLng{}
+		return maps.LatLng{}, fmt.Errorf("no address found for %+v", order)
 	}
 
 	chosenResult := results[0]
 	location := chosenResult.Geometry.Location
 
 	s.log.Debugf("Calculate zone: chosen address for %+v was: location: %s, address: %s",
-		shipping, location.String(), chosenResult.FormattedAddress)
+		order, location.String(), chosenResult.FormattedAddress)
 
-	return location
+	return location, nil
 }
 
 //nolint:gomnd
