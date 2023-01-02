@@ -1,5 +1,7 @@
 <template>
   <div class="px-2">
+    <div class="text-center text-xl my-2">Оформити Замовлення</div>
+
     <div class="grid grid-cols-1">
       <transition-group name="m-fade">
         <div v-for="orderProduct in order.products.values()" :key="orderProduct.product.id"
@@ -22,20 +24,20 @@
       </transition-group>
     </div>
     <div class="grid grid-cols-1 gap-2 pt-8">
-      <label class="flex justify-start gap-2">
+      <label class="flex justify-start items-center gap-2">
         <input type="checkbox" class="m-checkbox" v-model="order.doNotCall">
         Не телефонуйте мені
       </label>
-      <label class="flex justify-start gap-2">
+      <label class="flex justify-start items-center gap-2">
         <input type="checkbox" class="m-checkbox" v-model="order.noNapkins">
         Без серветок
       </label>
-      <div class="flex justify-start gap-2">
+      <div class="flex justify-start items-center gap-2">
         <add-remove-buttons fixed-size :amount="order.cutleryCount" :add="() => { order.cutleryCount++ }"
                             :remove="() => { order.cutleryCount-- }"/>
         <div class="flex-1">Звичайні прибори</div>
       </div>
-      <div class="flex justify-start gap-2">
+      <div class="flex justify-start items-center gap-2">
         <add-remove-buttons fixed-size :amount="order.trainingCutleryCount"
                             :add="() => { order.trainingCutleryCount++ }"
                             :remove="() => { order.trainingCutleryCount-- }"/>
@@ -43,8 +45,54 @@
       </div>
       <textarea
           class="form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg resize-none"
-          placeholder="Коментар до замовлення..." rows="3"
+          placeholder="Коментар до замовлення..." rows="3" maxlength="2048"
           @input="updateComment"></textarea>
+
+      <label class="flex flex-col">
+        <span class="ml-1">Ім'я*</span>
+        <input type="text" placeholder="..." class="m-input" maxlength="64" v-model.trim="order.name" required/>
+      </label>
+      <label class="flex flex-col">
+        <span class="ml-1">Телефон*</span>
+        <input type="text" placeholder="..." class="m-input" maxlength="13" v-model.trim="order.phone" required/>
+      </label>
+
+      <div>Спосіб доставки</div>
+      <label class="flex justify-start items-center gap-2">
+        <input type="radio" value="delivery" checked class="m-radio" v-model="order.deliveryType"/>
+        Доставка
+      </label>
+      <label class="flex justify-start items-center gap-2">
+        <input type="radio" value="self_pickup_1" class="m-radio" v-model="order.deliveryType"/>
+        Самовивіз (вул. Трускавецька, 2a)
+      </label>
+      <!--      <label class="flex justify-start items-center gap-2">-->
+      <!--        <input type="radio" value="self_pickup_2" class="m-radio" v-model="order.deliveryType"/>-->
+      <!--        Самовивіз (вул. ...)-->
+      <!--      </label>-->
+
+      <label class="flex flex-col">
+        <span class="ml-1">Акція</span>
+        <select class="m-select" v-model="order.promotion" required>
+          <option value="" selected>Акція Відсутня</option>
+          <option value="4+1" :disabled="!promo4Plus1Available">Акція Роли 4+1</option>
+          <option value="Самовивіз" :disabled="!promoSelfPickupAvailable">Самовивіз -10%</option>
+        </select>
+      </label>
+
+      <transition name="m-fade">
+        <label class="flex flex-col" v-show="order.deliveryType === 'delivery'">
+          <span class="ml-1">Місто*</span>
+          <input type="text" placeholder="..." disabled class="m-input" maxlength="128" v-model.trim="order.city"
+                 required/>
+        </label>
+      </transition>
+      <transition name="m-fade">
+        <label class="flex flex-col" v-show="order.deliveryType === 'delivery'">
+          <span class="ml-1">Адреса*</span>
+          <input type="text" placeholder="..." class="m-input" maxlength="512" v-model.trim="order.address" required/>
+        </label>
+      </transition>
     </div>
   </div>
 </template>
@@ -54,10 +102,44 @@ import AddRemoveButtons from "@/components/AddRemoveButtons.vue"
 import { storeToRefs } from "pinia"
 
 import { useGlobalStore } from "@/store"
-import { getImage, priceToText, OrderProduct, Product } from "@/types"
+import { getImage, OrderProduct, priceToText, Product } from "@/types"
+import { Ref, ref, watch } from "vue"
 
 const store = useGlobalStore()
 const { order } = storeToRefs(store)
+
+const promo4Plus1Available: Ref<boolean> = ref(false)
+const promoSelfPickupAvailable: Ref<boolean> = ref(false)
+
+watch(() => [ order.value.deliveryType, order.value.products ], () => {
+  if (order.value.deliveryType == "delivery") {
+    promoSelfPickupAvailable.value = false
+    promo4Plus1Available.value = false
+
+    let promoCount = 0
+    for (const [ _, product ] of order.value.products) {
+      if ([ "7", "14" ].includes(product.product.category_id)) {  // Роли, Без лактози
+        promoCount += product.amount
+      }
+
+      if (promoCount > 4) {
+        promo4Plus1Available.value = true
+        break
+      }
+    }
+
+    if (order.value.promotion == "Самовивіз" || !promo4Plus1Available.value) {
+      order.value.promotion = promo4Plus1Available.value ? "4+1" : ""
+    }
+  } else {
+    promoSelfPickupAvailable.value = true
+    promo4Plus1Available.value = false
+
+    if (order.value.promotion == "4+1") {
+      order.value.promotion = "Самовивіз"
+    }
+  }
+}, { deep: true })
 
 function addProduct(orderProduct: OrderProduct) {
   store.updateInOrder({

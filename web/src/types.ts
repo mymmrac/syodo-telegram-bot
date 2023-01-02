@@ -56,11 +56,17 @@ export type Order = {
     cutleryCount: number
     trainingCutleryCount: number
     comment: string
+    name: string
+    phone: string
+    deliveryType: string
+    promotion: string
+    city: string
+    address: string
 }
 
 export type ProductListItem = Product | SubCategory
 export type ProductListItems = ProductListItem[]
 
 export function isProduct(item: ProductListItem): item is Product {
-    return (<Product>item).price !== undefined
+    return (<Product> item).price !== undefined
 }

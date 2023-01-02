@@ -51,3 +51,15 @@ hr {
 .m-checkbox {
   @apply form-checkbox rounded-lg focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200 cursor-pointer;
 }
+
+.m-radio {
+  @apply form-radio rounded-lg focus:ring-0 focus:ring-offset-0 text-tg-button w-8 h-8 border-0 shadow transition duration-200 cursor-pointer;
+}
+
+.m-input {
+  @apply form-input rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg;
+}
+
+.m-select {
+  @apply form-select rounded-lg bg-tg-bg text-tg-text focus:ring-0 border-0 shadow-lg;
+}

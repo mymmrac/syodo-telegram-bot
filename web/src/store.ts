@@ -17,6 +17,12 @@ export const useGlobalStore = defineStore("global", {
             cutleryCount: 1,
             trainingCutleryCount: 0,
             comment: "",
+            name: "",
+            phone: "+380",
+            deliveryType: "delivery",
+            promotion: "",
+            city: "Львів",
+            address: "",
         },
 
         selectedCategory: categories[0].id,

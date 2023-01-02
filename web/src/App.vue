@@ -208,6 +208,30 @@ function confirmOrder() {
     return
   }
 
+  if (order.value.name == "") {
+    tg.MainButton.hideProgress()
+    showError("empty-name", "Будь ласка, вкажіть Ваше ім'я")
+    return
+  }
+
+  if (!order.value.phone.match(/^\+380\d{9}$/)) {
+    tg.MainButton.hideProgress()
+    showError("match-phone", "Будь ласка, вкажіть Ваш номер телефону у правильному форматі\n\nНаприклад: +380987654321")
+    return
+  }
+
+  if (order.value.deliveryType == "delivery" && order.value.city == "") {
+    tg.MainButton.hideProgress()
+    showError("empty-city", "Будь ласка, вкажіть місто доставки")
+    return
+  }
+
+  if (order.value.deliveryType == "delivery" && order.value.address == "") {
+    tg.MainButton.hideProgress()
+    showError("empty-address", "Будь ласка, вкажіть адресу доставки")
+    return
+  }
+
   const finalOrder: {
     appData: string
     products: {
@@ -222,6 +246,12 @@ function confirmOrder() {
     cutleryCount: number
     trainingCutleryCount: number
     comment: string
+    name: string
+    phone: string
+    deliveryType: string
+    promotion: string
+    city: string
+    address: string
   } = {
     appData: tg.initData,
     products: Array.from(order.value.products.values()).map(op => {
@@ -238,6 +268,12 @@ function confirmOrder() {
     cutleryCount: order.value.cutleryCount,
     trainingCutleryCount: order.value.trainingCutleryCount,
     comment: order.value.comment,
+    name: order.value.name,
+    phone: order.value.phone,
+    deliveryType: order.value.deliveryType,
+    promotion: order.value.promotion,
+    city: order.value.city,
+    address: order.value.address,
   }
 
   botAPI.post("/order", finalOrder)
