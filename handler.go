@@ -187,17 +187,19 @@ func (h *Handler) constructPrices(order OrderRequest, price PriceResponse) []tel
 		prices = append(prices, tu.LabeledPrice("🧻 Серветки", 0))
 	}
 
-	if order.DeliveryType == deliveryTypeDelivery {
-		prices = append(prices, tu.LabeledPrice(h.labelByZone(price.ServiceArea), price.Delivery))
-	} else {
-		prices = append(prices, tu.LabeledPrice("👋 Самовивіз", price.Delivery))
+	if price.Delivery != 0 {
+		if order.DeliveryType == deliveryTypeDelivery {
+			prices = append(prices, tu.LabeledPrice(h.labelByZone(price.ServiceArea), price.Delivery))
+		} else {
+			prices = append(prices, tu.LabeledPrice("👋 Самовивіз", price.Delivery))
+		}
 	}
 
 	switch order.Promotion {
 	case promo4Plus1:
-		prices = append(prices, tu.LabeledPrice("🎟 Акція 4+1", price.Discount))
+		prices = append(prices, tu.LabeledPrice("🎟 Акція 4+1", -price.Discount))
 	case promoSelfPickup:
-		prices = append(prices, tu.LabeledPrice("🎟 Самовивіз -10%", price.Discount))
+		prices = append(prices, tu.LabeledPrice("🎟 Самовивіз -10%", -price.Discount))
 	}
 
 	return prices
