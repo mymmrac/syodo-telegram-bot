@@ -93,6 +93,30 @@
           <input type="text" placeholder="..." class="m-input" maxlength="512" v-model.trim="order.address" required/>
         </label>
       </transition>
+      <transition name="m-fade">
+        <label class="flex flex-col" v-show="order.deliveryType === 'delivery'">
+          <span class="ml-1">Під'їзд</span>
+          <input type="text" placeholder="..." class="m-input" maxlength="512" v-model.trim="order.entrance"/>
+        </label>
+      </transition>
+      <transition name="m-fade">
+        <label class="flex flex-col" v-show="order.deliveryType === 'delivery'">
+          <span class="ml-1">Домофон</span>
+          <input type="text" placeholder="..." class="m-input" maxlength="512" v-model.trim="order.eCode"/>
+        </label>
+      </transition>
+      <transition name="m-fade">
+        <label class="flex flex-col" v-show="order.deliveryType === 'delivery'">
+          <span class="ml-1">Поверх</span>
+          <input type="text" placeholder="..." class="m-input" maxlength="512" v-model.trim="order.floor"/>
+        </label>
+      </transition>
+      <transition name="m-fade">
+        <label class="flex flex-col" v-show="order.deliveryType === 'delivery'">
+          <span class="ml-1">Квартира</span>
+          <input type="text" placeholder="..." class="m-input" maxlength="512" v-model.trim="order.apartment"/>
+        </label>
+      </transition>
     </div>
   </div>
 </template>

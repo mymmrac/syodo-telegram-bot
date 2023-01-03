@@ -137,7 +137,7 @@ watch(order, () => {
 
     if (outOfTime.value) {
       tg.MainButton.disable()
-      tg.MainButton.setText("На жали ми зараз не працюємо")
+      tg.MainButton.setText("На жаль ми зараз не працюємо")
     } else {
       tg.MainButton.enable()
       tg.MainButton.setText(`Замовити - ${ priceToText(store.totalOrderPrice) }`)
@@ -252,6 +252,10 @@ function confirmOrder() {
     promotion: string
     city: string
     address: string
+    entrance: string
+    eCode: string
+    floor: string
+    apartment: string
   } = {
     appData: tg.initData,
     products: Array.from(order.value.products.values()).map(op => {
@@ -274,6 +278,10 @@ function confirmOrder() {
     promotion: order.value.promotion,
     city: order.value.city,
     address: order.value.address,
+    entrance: order.value.entrance,
+    eCode: order.value.eCode,
+    floor: order.value.floor,
+    apartment: order.value.apartment,
   }
 
   botAPI.post("/order", finalOrder)

@@ -62,6 +62,10 @@ export type Order = {
     promotion: string
     city: string
     address: string
+    entrance: string
+    eCode: string
+    floor: string
+    apartment: string
 }
 
 export type ProductListItem = Product | SubCategory
