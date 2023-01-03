@@ -57,9 +57,16 @@ hr {
 }
 
 .m-input {
-  @apply form-input rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg;
+  @apply form-input shadow-lg rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 border-b border-b-tg-button focus:border-b-tg-text duration-200;
+  transition-property: border-bottom-color;
 }
 
 .m-select {
-  @apply form-select rounded-lg bg-tg-bg text-tg-text focus:ring-0 border-0 shadow-lg;
+  @apply form-select rounded-lg bg-tg-bg text-tg-text focus:ring-0 border-0 border-b border-b-tg-button focus:border-b-tg-text duration-200 shadow-lg;
+  transition-property: border-bottom-color;
+}
+
+.m-textarea {
+  @apply form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg resize-none border-b border-b-tg-button focus:border-b-tg-text duration-200;
+  transition-property: border-bottom-color;
 }

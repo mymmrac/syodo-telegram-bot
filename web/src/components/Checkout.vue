@@ -1,6 +1,6 @@
 <template>
   <div class="px-2">
-    <div class="text-center text-xl my-2">Оформити Замовлення</div>
+    <div class="text-center text-xl my-2">Оформити замовлення</div>
 
     <div class="grid grid-cols-1">
       <transition-group name="m-fade">
@@ -43,10 +43,8 @@
                             :remove="() => { order.trainingCutleryCount-- }"/>
         <div class="flex-1">Навчальні прибори</div>
       </div>
-      <textarea
-          class="form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg resize-none"
-          placeholder="Коментар до замовлення..." rows="3" maxlength="2048"
-          @input="updateComment"></textarea>
+      <textarea class="m-textarea" placeholder="Коментар до замовлення..." rows="3" maxlength="2048"
+                @input="updateComment"></textarea>
 
       <label class="flex flex-col">
         <span class="ml-1">Ім'я*</span>

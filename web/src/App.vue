@@ -3,7 +3,7 @@
     <div v-show="!checkout">
       <category-list/>
       <div class="w-full px-2 pb-2 my-1">
-        <div class="rounded-lg shadow-lg flex gap-2">
+        <div class="rounded-lg shadow-lg flex gap-2 border-b border-b-tg-button">
           <input type="text" placeholder="Пошук..." @input="updateSearch" :value="search"
                  class="p-2 flex-1 rounded-lg border-none ring-0 focus:ring-0 bg-tg-bg text-tg-text placeholder-tg-text text-sm">
           <button class="rounded-lg px-2" @click="store.clearSearch">
@@ -149,7 +149,7 @@ watch(order, () => {
 
   if (!store.isOrderEmpty) {
     tg.MainButton.enable()
-    tg.MainButton.setText("Переглянути замовлення")
+    tg.MainButton.setText("Оформити замовлення")
     tg.MainButton.show()
     tg.enableClosingConfirmation()
   } else {
@@ -186,7 +186,7 @@ tg.BackButton.onClick(() => {
 
   tg.BackButton.hide()
   tg.MainButton.enable()
-  tg.MainButton.setText("Переглянути замовлення")
+  tg.MainButton.setText("Оформити замовлення")
 })
 
 // Checkout
