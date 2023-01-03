@@ -3,7 +3,7 @@
     <div v-show="!checkout">
       <category-list/>
       <div class="w-full px-2 pb-2 my-1">
-        <div class="rounded-lg shadow-lg flex gap-2 border-b border-b-tg-button">
+        <div class="m-search-box">
           <input type="text" placeholder="Пошук..." @input="updateSearch" :value="search"
                  class="p-2 flex-1 rounded-lg border-none ring-0 focus:ring-0 bg-tg-bg text-tg-text placeholder-tg-text text-sm">
           <button class="rounded-lg px-2" @click="store.clearSearch">
@@ -342,5 +342,10 @@ tg.onEvent("invoiceClosed", () => {
     left: 0;
     right: 0;
   }
+}
+
+.m-search-box {
+  @apply rounded-lg shadow-lg flex gap-2 border border-tg-button focus-within:border-tg-text duration-200;
+  transition-property: border-bottom-color, border-left-color, border-right-color, border-top-color;
 }
 </style>

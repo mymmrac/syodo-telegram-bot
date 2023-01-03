@@ -57,16 +57,16 @@ hr {
 }
 
 .m-input {
-  @apply form-input shadow-lg rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 border-b border-b-tg-button focus:border-b-tg-text duration-200;
-  transition-property: border-bottom-color;
+  @apply form-input shadow-lg rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border border-tg-button focus:border-tg-text duration-200 mt-0.5;
+  transition-property: border-bottom-color, border-left-color, border-right-color, border-top-color;
 }
 
 .m-select {
-  @apply form-select rounded-lg bg-tg-bg text-tg-text focus:ring-0 border-0 border-b border-b-tg-button focus:border-b-tg-text duration-200 shadow-lg;
-  transition-property: border-bottom-color;
+  @apply form-select rounded-lg bg-tg-bg text-tg-text focus:ring-0 border border-tg-button focus:border-tg-text duration-200 shadow-lg mt-0.5;
+  transition-property: border-bottom-color, border-left-color, border-right-color, border-top-color;
 }
 
 .m-textarea {
-  @apply form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 border-0 shadow-lg resize-none border-b border-b-tg-button focus:border-b-tg-text duration-200;
-  transition-property: border-bottom-color;
+  @apply form-textarea rounded-lg bg-tg-bg text-tg-text placeholder-tg-text focus:ring-0 shadow-lg resize-none border border-tg-button focus:border-tg-text duration-200;
+  transition-property: border-bottom-color, border-left-color, border-right-color, border-top-color;
 }
