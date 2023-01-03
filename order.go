@@ -32,6 +32,10 @@ type OrderRequest struct {
 	Promotion            string         `json:"promotion"`
 	City                 string         `json:"city"`
 	Address              string         `json:"address"`
+	Entrance             string         `json:"entrance"`
+	ECode                string         `json:"eCode"`
+	Floor                string         `json:"floor"`
+	Apartment            string         `json:"apartment"`
 }
 
 // OrderDetails represents full order info
