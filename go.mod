@@ -10,7 +10,7 @@ require (
 	github.com/kataras/golog v0.1.8
 	github.com/mymmrac/memkey v0.2.0
 	github.com/mymmrac/telego v0.18.1
-	github.com/valyala/fasthttp v1.43.0
+	github.com/valyala/fasthttp v1.44.0
 	googlemaps.github.io/maps v1.3.2
 )
 
