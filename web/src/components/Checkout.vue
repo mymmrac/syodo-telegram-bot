@@ -64,10 +64,10 @@
         <input type="radio" value="self_pickup_1" class="m-radio" v-model="order.deliveryType"/>
         Самовивіз (вул. Трускавецька, 2a)
       </label>
-      <!--      <label class="flex justify-start items-center gap-2">-->
-      <!--        <input type="radio" value="self_pickup_2" class="m-radio" v-model="order.deliveryType"/>-->
-      <!--        Самовивіз (вул. ...)-->
-      <!--      </label>-->
+      <label class="flex justify-start items-center gap-2">
+        <input type="radio" value="self_pickup_2" class="m-radio" v-model="order.deliveryType"/>
+        Самовивіз (вул. Mалоголосківська, 28)
+      </label>
 
       <label class="flex flex-col">
         <span class="ml-1">Акція</span>
