@@ -84,7 +84,7 @@ type Settings struct {
 	UseLongPulling     bool          `validate:"-"`
 	ServerHost         string        `validate:"hostname_port"`
 	WebhookURL         string        `validate:"url"`
-	LongPullingTimeout int           `validate:"gte=0"`
+	LongPollingTimeout int           `validate:"gte=0"`
 	RequestTimeout     time.Duration `validate:"gt=0"`
 	TestMode           bool          `validate:"-"`
 	OrderTTL           time.Duration `validate:"gt=0"`

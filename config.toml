@@ -5,7 +5,7 @@ filename = "server.log"
 
 [settings]
 stopTimeout = "10s"
-useLongPulling = true
+useLongPolling = true
 serverHost = "localhost:8080"
 webhookURL = "https://telegrambot.syodo.com.ua/syodo-bot"
 longPullingTimeout = 4

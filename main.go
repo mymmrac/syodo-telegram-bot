@@ -99,9 +99,9 @@ func start(cfg *config.Config, log *logger.Log) {
 			log.Fatalf("Delete webhook: %s", err)
 		}
 
-		updates, err = bot.UpdatesViaLongPulling(&telego.GetUpdatesParams{
-			Timeout: cfg.Settings.LongPullingTimeout,
-		}, telego.WithLongPullingUpdateInterval(0))
+		updates, err = bot.UpdatesViaLongPolling(&telego.GetUpdatesParams{
+			Timeout: cfg.Settings.LongPollingTimeout,
+		}, telego.WithLongPollingUpdateInterval(0))
 	} else {
 		err = bot.SetWebhook(&telego.SetWebhookParams{
 			URL: cfg.Settings.WebhookURL + "/bot/" + bot.Token(),
@@ -136,7 +136,7 @@ func start(cfg *config.Config, log *logger.Log) {
 		log.Info("Stopping")
 
 		if cfg.Settings.UseLongPulling {
-			bot.StopLongPulling()
+			bot.StopLongPolling()
 			err = srv.Shutdown()
 		} else {
 			err = bot.StopWebhook()
