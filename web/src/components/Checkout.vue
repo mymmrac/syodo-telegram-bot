@@ -74,7 +74,7 @@
         <select class="m-select" v-model="order.promotion" required>
           <option value="" selected>Акція Відсутня</option>
           <option value="4+1" :disabled="!promo4Plus1Available">Акція Роли 4+1</option>
-          <option value="Самовивіз" :disabled="!promoSelfPickupAvailable">Самовивіз -10%</option>
+          <!--          <option value="Самовивіз" :disabled="!promoSelfPickupAvailable">Самовивіз -10%</option>-->
         </select>
       </label>
 
@@ -131,11 +131,11 @@ const store = useGlobalStore()
 const { order } = storeToRefs(store)
 
 const promo4Plus1Available: Ref<boolean> = ref(false)
-const promoSelfPickupAvailable: Ref<boolean> = ref(false)
+// const promoSelfPickupAvailable: Ref<boolean> = ref(false)
 
 watch(() => [ order.value.deliveryType, order.value.products ], () => {
   if (order.value.deliveryType == "delivery") {
-    promoSelfPickupAvailable.value = false
+    // promoSelfPickupAvailable.value = false
     promo4Plus1Available.value = false
 
     let promoCount = 0
@@ -150,15 +150,17 @@ watch(() => [ order.value.deliveryType, order.value.products ], () => {
       }
     }
 
-    if (order.value.promotion == "Самовивіз" || !promo4Plus1Available.value) {
+    // if (order.value.promotion == "Самовивіз" || !promo4Plus1Available.value) {
+    if (!promo4Plus1Available.value) {
       order.value.promotion = promo4Plus1Available.value ? "4+1" : ""
     }
   } else {
-    promoSelfPickupAvailable.value = true
+    // promoSelfPickupAvailable.value = true
     promo4Plus1Available.value = false
 
     if (order.value.promotion == "4+1") {
-      order.value.promotion = "Самовивіз"
+      // order.value.promotion = "Самовивіз"
+      order.value.promotion = ""
     }
   }
 }, { deep: true })

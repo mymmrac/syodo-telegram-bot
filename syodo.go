@@ -30,8 +30,8 @@ const (
 	shippingTypeDelivery   = "Доставка"
 	shippingTypeSelfPickup = "Самовивіз"
 
-	promo4Plus1     = "4+1"
-	promoSelfPickup = "Самовивіз"
+	promo4Plus1 = "4+1"
+	// promoSelfPickup = "Самовивіз"
 )
 
 // SyodoService represents a type to interact with Syodo API

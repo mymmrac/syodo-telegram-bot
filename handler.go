@@ -198,8 +198,8 @@ func (h *Handler) constructPrices(order OrderRequest, price PriceResponse) []tel
 	switch order.Promotion {
 	case promo4Plus1:
 		prices = append(prices, tu.LabeledPrice("🎟 Акція 4+1", -price.Discount))
-	case promoSelfPickup:
-		prices = append(prices, tu.LabeledPrice("🎟 Самовивіз -10%", -price.Discount))
+		// case promoSelfPickup:
+		// 	prices = append(prices, tu.LabeledPrice("🎟 Самовивіз -10%", -price.Discount))
 	}
 
 	return prices
