@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/fasthttp/router v1.4.15
 	github.com/go-playground/validator/v10 v10.11.1
-	github.com/joho/godotenv v1.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/kataras/golog v0.1.8
 	github.com/mymmrac/memkey v0.2.0
 	github.com/mymmrac/telego v0.19.0
