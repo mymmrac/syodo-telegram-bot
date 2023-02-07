@@ -11,7 +11,7 @@ require (
 	github.com/mymmrac/memkey v0.2.0
 	github.com/mymmrac/telego v0.19.0
 	github.com/valyala/fasthttp v1.44.0
-	googlemaps.github.io/maps v1.3.3
+	googlemaps.github.io/maps v1.4.0
 )
 
 require (
