@@ -4,12 +4,12 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/fasthttp/router v1.4.15
+	github.com/fasthttp/router v1.4.16
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/golog v0.1.8
 	github.com/mymmrac/memkey v0.2.0
-	github.com/mymmrac/telego v0.19.0
+	github.com/mymmrac/telego v0.21.1
 	github.com/valyala/fasthttp v1.44.0
 	googlemaps.github.io/maps v1.3.3
 )
@@ -28,6 +28,6 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
