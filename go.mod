@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/fasthttp/router v1.4.15
+	github.com/fasthttp/router v1.4.17
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/golog v0.1.8
@@ -23,7 +23,7 @@ require (
 	github.com/kataras/pio v0.0.11 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
+	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
