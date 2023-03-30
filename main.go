@@ -87,11 +87,10 @@ func start(cfg *config.Config, log *logger.Log) {
 	}
 
 	rtr := router.New()
-	var srv *fasthttp.Server
+	srv := &fasthttp.Server{}
 	var updates <-chan telego.Update
 
 	if cfg.Settings.UseLongPulling {
-		srv = &fasthttp.Server{}
 		srv.Handler = rtr.Handler
 
 		err = bot.DeleteWebhook(&telego.DeleteWebhookParams{})
@@ -110,8 +109,13 @@ func start(cfg *config.Config, log *logger.Log) {
 			log.Fatalf("Set webhook: %s", err)
 		}
 
-		updates, err = bot.UpdatesViaWebhook("/bot/"+bot.Token(), telego.WithWebhookRouter(rtr),
-			telego.WithWebhookHealthAPI())
+		updates, err = bot.UpdatesViaWebhook("/bot/"+bot.Token(),
+			telego.WithWebhookServer(telego.FastHTTPWebhookServer{
+				Logger: bot.Logger(),
+				Server: srv,
+				Router: rtr,
+			}),
+		)
 	}
 	if err != nil {
 		log.Fatalf("Get updates: %s", err)
@@ -156,7 +160,13 @@ func start(cfg *config.Config, log *logger.Log) {
 	if cfg.Settings.UseLongPulling {
 		err = srv.ListenAndServe(cfg.Settings.ServerHost)
 	} else {
-		err = bot.StartListeningForWebhook(cfg.Settings.ServerHost)
+		go func() {
+			startErr := bot.StartWebhook(cfg.Settings.ServerHost)
+			if startErr != nil {
+				fmt.Println("Failed to start webhook:", startErr)
+				os.Exit(1)
+			}
+		}()
 	}
 	if err != nil {
 		log.Fatalf("Start server: %s", err)
