@@ -201,17 +201,18 @@ type contactDTO struct {
 }
 
 type deliveryDetailsDTO struct {
-	Type           string `json:"type"`
-	Date           string `json:"date"`
-	Time           string `json:"time"`
-	Comments       string `json:"comments"`
-	Address        string `json:"address"`
-	Entrance       string `json:"entrance"`
-	Apt            string `json:"apt"`
-	ECode          string `json:"eCode"`
-	ServiceArea    string `json:"serviceArea"`
-	PickupLocation string `json:"pickupLocation"`
-	DontCall       bool   `json:"dontCall"`
+	Type           string   `json:"type"`
+	Date           string   `json:"date"`
+	Time           string   `json:"time"`
+	Comments       string   `json:"comments"`
+	Address        string   `json:"address"`
+	Entrance       string   `json:"entrance"`
+	Apt            string   `json:"apt"`
+	ECode          string   `json:"eCode"`
+	ServiceArea    string   `json:"serviceArea"`
+	Point          pointDTO `json:"point,omitempty"`
+	PickupLocation string   `json:"pickupLocation"`
+	DontCall       bool     `json:"dontCall"`
 }
 
 type paymentDTO struct {
@@ -296,14 +297,18 @@ func (s *SyodoService) Checkout(order *OrderDetails) error {
 			Phone: order.Request.Phone,
 		},
 		DeliveryDetails: deliveryDetailsDTO{
-			Type:           deliveryType,
-			DontCall:       order.Request.DoNotCall,
-			Comments:       order.Request.Comment,
-			Address:        order.Request.Address + ", м. " + order.Request.City,
-			Entrance:       order.Request.Entrance,
-			Apt:            order.Request.Apartment,
-			ECode:          order.Request.ECode,
-			ServiceArea:    order.ServiceArea,
+			Type:        deliveryType,
+			DontCall:    order.Request.DoNotCall,
+			Comments:    order.Request.Comment,
+			Address:     order.Request.Address + ", м. " + order.Request.City,
+			Entrance:    order.Request.Entrance,
+			Apt:         order.Request.Apartment,
+			ECode:       order.Request.ECode,
+			ServiceArea: order.ServiceArea,
+			Point: pointDTO{
+				Lat: order.Request.Location.Lat,
+				Lng: order.Request.Location.Lng,
+			},
 			PickupLocation: pickupLocation,
 		},
 		PaymentDetails: paymentDTO{

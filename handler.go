@@ -130,6 +130,7 @@ func (h *Handler) orderHandler(ctx *fasthttp.RequestCtx) {
 		if err != nil {
 			break
 		}
+		order.Location = location
 
 		price, err = h.syodo.CalculatePriceDelivery(order.Products, location, order.Promotion)
 	case "self_pickup_1", "self_pickup_2":

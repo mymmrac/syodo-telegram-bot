@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mymmrac/memkey"
+	"googlemaps.github.io/maps"
 )
 
 // OrderProduct represents a single item in order
@@ -29,6 +30,7 @@ type OrderRequest struct {
 	Name                 string         `json:"name"`
 	Phone                string         `json:"phone"`
 	DeliveryType         string         `json:"deliveryType"`
+	Location             maps.LatLng    `json:"-"`
 	Promotion            string         `json:"promotion"`
 	City                 string         `json:"city"`
 	Address              string         `json:"address"`
